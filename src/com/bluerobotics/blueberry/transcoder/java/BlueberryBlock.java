@@ -21,9 +21,67 @@ THE SOFTWARE.
 */
 package com.bluerobotics.blueberry.transcoder.java;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 /**
  * 
  */
 public class BlueberryBlock {
-
+	private final int m_start;
+	private final ByteBuffer m_buf;
+	/**
+	 * wraps the supplied buffer in a block.
+	 * Buffer position assumed to be the start of this block
+	 * @param bb - a ByteBuffer either with a received packet or to be filled with a packet to transmit
+	 */
+	public BlueberryBlock(ByteBuffer bb) {
+		m_buf = bb;
+		m_start = bb.position();
+		m_buf.order(ByteOrder.LITTLE_ENDIAN);
+	}
+	
+	public void writeFloat(int i, double v){
+		m_buf.putFloat(i + m_start, (float)v);
+	}
+	public void writeInt(int i, int v) {
+		m_buf.putInt(i + m_start,  v);
+	}
+	public void writeByte(int i, int v) {
+		m_buf.put(i + m_start, (byte)v);
+	}
+	public void writeShort(int i, int v) {
+		m_buf.putShort(i + m_start, (short)v);
+	}
+	public double readFloat(int i) {
+		return m_buf.getFloat(i + m_start);
+	}
+	public int readInt(int i) {
+		return m_buf.getInt(i + m_start);
+	}
+	public int readByte(int i) {
+		return m_buf.get(i + m_start);
+	}
+	public int readShort(int i) {
+		return m_buf.getShort(i + m_start);
+	}
+	public void writeBit(int i, int bitNum, boolean v) {
+		if(bitNum > 7) {
+			throw new RuntimeException("bit number cannot be greater than 7!");
+		}
+		int bv = readByte(i);
+		if(v) {
+			bv |= 1<<bitNum;
+		} else {
+			bv &= ~(1<<bitNum);
+		}
+		writeByte(i, bv);
+	}
+	public boolean readBit(int i, int bitNum) {
+		if(bitNum > 7) {
+			throw new RuntimeException("bit number cannot be greater than 7!");
+		}
+		int bv = readByte(i) & (1<<bitNum);
+		return bv != 0;
+	}
 }
