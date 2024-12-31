@@ -41,47 +41,47 @@ public class BlueberryBlock {
 		m_buf.order(ByteOrder.LITTLE_ENDIAN);
 	}
 	
-	public void writeFloat(int i, double v){
-		m_buf.putFloat(i + m_start, (float)v);
+	public void writeFloat(FieldIndex i, double v){
+		m_buf.putFloat(i.getIndex() + m_start, (float)v);
 	}
-	public void writeInt(int i, int v) {
-		m_buf.putInt(i + m_start,  v);
+	public void writeInt(FieldIndex i, int v) {
+		m_buf.putInt(i.getIndex() + m_start,  v);
 	}
-	public void writeByte(int i, int v) {
-		m_buf.put(i + m_start, (byte)v);
+	public void writeByte(FieldIndex i, int v) {
+		m_buf.put(i.getIndex() + m_start, (byte)v);
 	}
-	public void writeShort(int i, int v) {
-		m_buf.putShort(i + m_start, (short)v);
+	public void writeShort(FieldIndex i, int v) {
+		m_buf.putShort(i.getIndex() + m_start, (short)v);
 	}
-	public double readFloat(int i) {
-		return m_buf.getFloat(i + m_start);
+	public double readFloat(FieldIndex i) {
+		return m_buf.getFloat(i.getIndex() + m_start);
 	}
-	public int readInt(int i) {
-		return m_buf.getInt(i + m_start);
+	public int readInt(FieldIndex i) {
+		return m_buf.getInt(i.getIndex() + m_start);
 	}
-	public int readByte(int i) {
-		return m_buf.get(i + m_start);
+	public int readByte(FieldIndex i) {
+		return m_buf.get(i.getIndex() + m_start);
 	}
-	public int readShort(int i) {
-		return m_buf.getShort(i + m_start);
+	public int readShort(FieldIndex i) {
+		return m_buf.getShort(i.getIndex() + m_start);
 	}
-	public void writeBit(int i, int bitNum, boolean v) {
-		if(bitNum > 7) {
+	public void writeBit(BitIndex i, boolean v) {
+		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
 		int bv = readByte(i);
 		if(v) {
-			bv |= 1<<bitNum;
+			bv |= 1<<i.getBitIndex();
 		} else {
-			bv &= ~(1<<bitNum);
+			bv &= ~(1<<i.getBitIndex());
 		}
 		writeByte(i, bv);
 	}
-	public boolean readBit(int i, int bitNum) {
-		if(bitNum > 7) {
+	public boolean readBit(BitIndex i) {
+		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i) & (1<<bitNum);
+		int bv = readByte(i) & (1<<i.getBitIndex());
 		return bv != 0;
 	}
 }
