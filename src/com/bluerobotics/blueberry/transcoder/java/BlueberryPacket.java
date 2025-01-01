@@ -34,7 +34,7 @@ public abstract class BlueberryPacket extends Packet {
 	}
 
 	@Override
-	int computeCrc() {
+	public int computeCrc() {
 		int result = -1;
 		if(bytesNeeded() == 0){
 			int pl = getByteLength();
