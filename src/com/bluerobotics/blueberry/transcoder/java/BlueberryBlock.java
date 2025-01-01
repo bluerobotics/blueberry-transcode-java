@@ -28,8 +28,8 @@ import java.nio.ByteOrder;
  * 
  */
 public class BlueberryBlock {
-	private final int m_start;
-	private final ByteBuffer m_buf;
+	private int m_start;
+	private ByteBuffer m_buf;
 	/**
 	 * wraps the supplied buffer in a block.
 	 * Buffer position assumed to be the start of this block
@@ -39,6 +39,29 @@ public class BlueberryBlock {
 		m_buf = bb;
 		m_start = bb.position();
 		m_buf.order(ByteOrder.LITTLE_ENDIAN);
+	}
+	public BlueberryBlock getNextBlock(int i) {
+		ByteBuffer bb = m_buf.slice();
+		bb.position(i + m_start);
+		return new BlueberryBlock(bb);
+	}
+	/**
+	 * replaces this blocks buffer with a linear one - i.e. de-circularizes it
+	 * if the buffer's end location is wrapped around from the start location,
+	 * then this buffer is circular.
+	 * In this case, this method will copy the buffer's data to a new buffer, and use that instead
+	 */
+	public void linearize(int start, int end) {
+		if(start > end) {
+			//this buffer has wrappeed
+			int n = m_buf.limit();
+			int m = end + n - start;//compute the number of actual elements
+			ByteBuffer bb = ByteBuffer.allocate(m);
+			bb.put(0, m_buf, m_start, n - m_start);//copy the first half of the array
+			bb.put(n - m_start, m_buf, 0, end);//copy the second half of the array
+			m_buf = bb;
+			m_start = 0;
+		}
 	}
 	
 	public void writeFloat(FieldIndex i, double v){

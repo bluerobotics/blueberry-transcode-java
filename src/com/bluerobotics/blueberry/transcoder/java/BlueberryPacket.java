@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2024  Blue Robotics
+Copyright (c) 2025  Kenneth MacCallum
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -21,24 +21,32 @@ THE SOFTWARE.
 */
 package com.bluerobotics.blueberry.transcoder.java;
 
+import com.starfishmedical.comms.Crc1021;
+import com.starfishmedical.comms.Packet;
+
 /**
  * 
  */
-public interface FieldIndex {
-//	public enum BitNum {
-//		ONE_BIT(1),
-//		ONE_BYTE(8),
-//		TWO_BYTES(16),
-//		FOUR_BYTES(32)
-//		;
-//		private int bits;
-//		private BitNum(int b) {
-//			bits = b;
-//		}
-//		public int getBits() {
-//			return bits;
-//		}
-//	}
-	int getIndex();
-	int getBits();
+public abstract class BlueberryPacket extends Packet {
+	protected BlueberryPacket(int bufferSize) {
+		super(bufferSize);
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	int computeCrc() {
+		int result = -1;
+		if(bytesNeeded() == 0){
+			int pl = getByteLength();
+			Crc1021 crc = new Crc1021();
+
+			for(int i = 8; i < pl; ++i){
+				byte b = get(i);
+				crc.addByte(b);
+			}
+			
+			result = crc.getCrc();
+		}
+		return result;
+	}	
 }
