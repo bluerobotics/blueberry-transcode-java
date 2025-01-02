@@ -73,4 +73,16 @@ public abstract class BlueberryPacket extends Packet {
 	public double getFloat(FieldIndex i) {
 		return getFloat(i.getIndex());
 	}
+	public void putBool(BitIndex i, boolean v) {
+		byte b = getByte(i.getIndex());
+		if(v) {
+			b |= 1<<i.getBitIndex();
+		} else {
+			b &= ~(1<<i.getBitIndex());
+		}
+		putByte(i.getIndex(), b);
+	}
+	public boolean getBool(BitIndex i) {
+		return (getByte(i.getIndex()) & (1<<i.getBitIndex())) != 0;
+	}
 }
