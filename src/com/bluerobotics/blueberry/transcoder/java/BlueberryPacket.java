@@ -48,5 +48,29 @@ public abstract class BlueberryPacket extends Packet {
 			result = crc.getCrc();
 		}
 		return result;
-	}	
+	}
+	public void putByte(FieldIndex i, int v) {
+		putByte(i.getIndex(), v);
+	}
+	public void putShort(FieldIndex i, int v) {
+		putShort(i.getIndex(), v);
+	}
+	public void putInt(FieldIndex i, int v) {
+		putInt(i.getIndex(), v);
+	}
+	public void putFloat(FieldIndex i, double v) {
+		putFloat(i.getIndex(), v);
+	}
+	public int getByte(FieldIndex i) {
+		return getByte(i.getIndex());
+	}
+	public int getShort(FieldIndex i) {
+		return getShort(i.getIndex());
+	}
+	public int getInt(FieldIndex i) {
+		return getInt(i.getIndex());
+	}
+	public double getFloat(FieldIndex i) {
+		return getFloat(i.getIndex());
+	}
 }
