@@ -74,7 +74,7 @@ public class BlueberryBlock {
 	public int readShort(FieldIndex i) {
 		return m_buf.getShort(i.getIndex());
 	}
-	public void writeBit(BitIndex i, boolean v) {
+	public void writeBool(BitIndex i, boolean v) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
@@ -86,7 +86,7 @@ public class BlueberryBlock {
 		}
 		writeByte(i, bv);
 	}
-	public boolean readBit(BitIndex i) {
+	public boolean readBool(BitIndex i) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
