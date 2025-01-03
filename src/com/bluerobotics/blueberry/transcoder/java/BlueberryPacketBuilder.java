@@ -28,10 +28,22 @@ package com.bluerobotics.blueberry.transcoder.java;
 public abstract class BlueberryPacketBuilder {
 	private BlueberryPacket m_packet;
 	private final int m_maxByteCount;
+	private BlueberryBlock m_topLevelBlock;
+	private BlueberryBlock m_currentBlock;
 	public BlueberryPacketBuilder(int maxByteCount) {
 		m_maxByteCount = maxByteCount;
 	}
 	public void reset() {
-		m_packet 
+		m_packet = new BlueberryPacket(m_maxByteCount);
+		m_topLevelBlock = m_packet.getTopLevelBlock();
 	}
+	public BlueberryBlock getTopLevelBlock() {
+		return m_topLevelBlock;
+	}
+	public BlueberryBlock getCurrentBlock() {
+		return m_currentBlock;
+	}
+//	public void advanceBlock(int i) {
+//		m_currentBlock = m_currentBlock.getNextBlock(i);
+//	}
 }
