@@ -21,34 +21,17 @@ THE SOFTWARE.
 */
 package com.bluerobotics.blueberry.transcoder.java;
 
-import com.starfishmedical.comms.Crc1021;
-import com.starfishmedical.comms.Packet;
-
 /**
- * 
+ * An abstract class to base a builder class on.
+ * The builder is used to construct a packet for transmission
  */
-public abstract class BlueberryPacket extends Packet {
-	protected BlueberryPacket(int bufferSize) {
-		super(bufferSize);
+public abstract class BlueberryPacketBuilder {
+	private BlueberryPacket m_packet;
+	private final int m_maxByteCount;
+	public BlueberryPacketBuilder(int maxByteCount) {
+		m_maxByteCount = maxByteCount;
 	}
-
-	@Override
-	public int computeCrc() {
-		int result = -1;
-		
-		int pl = getByteLength();
-		Crc1021 crc = new Crc1021();
-
-		for(int i = 8; i < pl; ++i){
-			byte b = get(i);
-			crc.addByte(b);
-		}
-			
-			result = crc.getCrc();
-		
-		return result;
-	}
-	public BlueberryBlock getTopLevelBlock() {
-		return new BlueberryBlock(getActualBuffer());
+	public void reset() {
+		m_packet 
 	}
 }
