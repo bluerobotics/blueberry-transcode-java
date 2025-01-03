@@ -50,47 +50,47 @@ public class BlueberryBlock {
 	}
 	
 	
-	public void writeFloat(FieldIndex i, double v){
-		m_buf.putFloat(i.getIndex(), (float)v);
+	public void writeFloat(FieldIndex i, int wordOffset, double v){
+		m_buf.putFloat(i.getIndex() + 4*wordOffset, (float)v);
 	}
-	public void writeInt(FieldIndex i, int v) {
-		m_buf.putInt(i.getIndex(),  v);
+	public void writeInt(FieldIndex i, int wordOffset, int v) {
+		m_buf.putInt(i.getIndex() + 4*wordOffset,  v);
 	}
-	public void writeByte(FieldIndex i, int v) {
-		m_buf.put(i.getIndex(), (byte)v);
+	public void writeByte(FieldIndex i, int wordOffset, int v) {
+		m_buf.put(i.getIndex() + 4*wordOffset, (byte)v);
 	}
-	public void writeShort(FieldIndex i, int v) {
-		m_buf.putShort(i.getIndex(), (short)v);
+	public void writeShort(FieldIndex i, int wordOffset, int v) {
+		m_buf.putShort(i.getIndex() + 4*wordOffset, (short)v);
 	}
-	public double readFloat(FieldIndex i) {
-		return m_buf.getFloat(i.getIndex());
+	public double readFloat(FieldIndex i, int wordOffset) {
+		return m_buf.getFloat(i.getIndex() + 4*wordOffset);
 	}
-	public int readInt(FieldIndex i) {
-		return m_buf.getInt(i.getIndex());
+	public int readInt(FieldIndex i, int wordOffset) {
+		return m_buf.getInt(i.getIndex() + 4*wordOffset);
 	}
-	public int readByte(FieldIndex i) {
-		return m_buf.get(i.getIndex());
+	public int readByte(FieldIndex i, int wordOffset) {
+		return m_buf.get(i.getIndex() + 4*wordOffset);
 	}
-	public int readShort(FieldIndex i) {
-		return m_buf.getShort(i.getIndex());
+	public int readShort(FieldIndex i, int wordOffset) {
+		return m_buf.getShort(i.getIndex() + 4*wordOffset);
 	}
-	public void writeBool(BitIndex i, boolean v) {
+	public void writeBool(BitIndex i, int wordOffset, boolean v) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i);
+		int bv = readByte(i, wordOffset);
 		if(v) {
 			bv |= 1<<i.getBitIndex();
 		} else {
 			bv &= ~(1<<i.getBitIndex());
 		}
-		writeByte(i, bv);
+		writeByte(i, wordOffset, bv);
 	}
-	public boolean readBool(BitIndex i) {
+	public boolean readBool(BitIndex i, int wordOffset) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i) & (1<<i.getBitIndex());
+		int bv = readByte(i,  + 4*wordOffset) & (1<<i.getBitIndex());
 		return bv != 0;
 	}
 }
