@@ -28,65 +28,51 @@ import java.nio.ByteOrder;
  * 
  */
 public class BlueberryBlock {
-	private int m_start;
 	private ByteBuffer m_buf;
 	/**
 	 * wraps the supplied buffer in a block.
-	 * Buffer position assumed to be the start of this block
+	 * Buffer starting location (index = 0) is assumed to be the beginning of block
 	 * @param bb - a ByteBuffer either with a received packet or to be filled with a packet to transmit
 	 */
 	public BlueberryBlock(ByteBuffer bb) {
 		m_buf = bb;
-		m_start = bb.position();
 		m_buf.order(ByteOrder.LITTLE_ENDIAN);
 	}
+	/**
+	 * Makes a new block offset from this one by the specified number of bytes
+	 * @param i - the number of bytes to offset this block by when creating the new block
+	 * @return - the new block that is offset from this one.
+	 */
 	public BlueberryBlock getNextBlock(int i) {
-		ByteBuffer bb = m_buf.slice();
-		bb.position(i + m_start);
+		int n = m_buf.capacity();
+		ByteBuffer bb = m_buf.slice(i, n - i);
 		return new BlueberryBlock(bb);
 	}
-	/**
-	 * replaces this blocks buffer with a linear one - i.e. de-circularizes it
-	 * if the buffer's end location is wrapped around from the start location,
-	 * then this buffer is circular.
-	 * In this case, this method will copy the buffer's data to a new buffer, and use that instead
-	 */
-	public void linearize(int start, int end) {
-		if(start > end) {
-			//this buffer has wrappeed
-			int n = m_buf.limit();
-			int m = end + n - start;//compute the number of actual elements
-			ByteBuffer bb = ByteBuffer.allocate(m);
-			bb.put(0, m_buf, m_start, n - m_start);//copy the first half of the array
-			bb.put(n - m_start, m_buf, 0, end);//copy the second half of the array
-			m_buf = bb;
-			m_start = 0;
-		}
-	}
+	
 	
 	public void writeFloat(FieldIndex i, double v){
-		m_buf.putFloat(i.getIndex() + m_start, (float)v);
+		m_buf.putFloat(i.getIndex(), (float)v);
 	}
 	public void writeInt(FieldIndex i, int v) {
-		m_buf.putInt(i.getIndex() + m_start,  v);
+		m_buf.putInt(i.getIndex(),  v);
 	}
 	public void writeByte(FieldIndex i, int v) {
-		m_buf.put(i.getIndex() + m_start, (byte)v);
+		m_buf.put(i.getIndex(), (byte)v);
 	}
 	public void writeShort(FieldIndex i, int v) {
-		m_buf.putShort(i.getIndex() + m_start, (short)v);
+		m_buf.putShort(i.getIndex(), (short)v);
 	}
 	public double readFloat(FieldIndex i) {
-		return m_buf.getFloat(i.getIndex() + m_start);
+		return m_buf.getFloat(i.getIndex());
 	}
 	public int readInt(FieldIndex i) {
-		return m_buf.getInt(i.getIndex() + m_start);
+		return m_buf.getInt(i.getIndex());
 	}
 	public int readByte(FieldIndex i) {
-		return m_buf.get(i.getIndex() + m_start);
+		return m_buf.get(i.getIndex());
 	}
 	public int readShort(FieldIndex i) {
-		return m_buf.getShort(i.getIndex() + m_start);
+		return m_buf.getShort(i.getIndex());
 	}
 	public void writeBit(BitIndex i, boolean v) {
 		if(i.getBitIndex() > 7) {
