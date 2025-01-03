@@ -1,4 +1,5 @@
 /*
+
 Copyright (c) 2025  Kenneth MacCallum
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -43,7 +44,7 @@ public abstract class BlueberryPacketBuilder {
 	public BlueberryBlock getCurrentBlock() {
 		return m_currentBlock;
 	}
-//	public void advanceBlock(int i) {
-//		m_currentBlock = m_currentBlock.getNextBlock(i);
-//	}
+	protected void advanceBlock(int i) {
+		m_currentBlock = m_currentBlock.getNextBlock(i);
+	}
 }
