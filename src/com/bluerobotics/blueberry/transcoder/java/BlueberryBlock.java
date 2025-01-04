@@ -43,13 +43,18 @@ public class BlueberryBlock {
 	 * @param i - the number of bytes to offset this block by when creating the new block
 	 * @return - the new block that is offset from this one.
 	 */
-	public BlueberryBlock getNextBlock(int i) {
+	public BlueberryBlock getNextBlock(int wordOffset) {
 		int n = m_buf.capacity();
+		int i = wordOffset * 4;
 		ByteBuffer bb = m_buf.slice(i, n - i);
 		return new BlueberryBlock(bb);
 	}
-	public int getCurrentByteIndex() {
-		return m_buf.arrayOffset();
+	public int getCurrentWordIndex() {
+		int i = m_buf.arrayOffset();
+		if((i & 0b11) != 0) {
+			throw new RuntimeException("Somehow the buffer length is not a multiple of 4!");
+		}
+		return i/4;
 	}
 	
 	

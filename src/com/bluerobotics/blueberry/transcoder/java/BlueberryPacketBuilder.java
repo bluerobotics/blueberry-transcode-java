@@ -44,8 +44,12 @@ public abstract class BlueberryPacketBuilder {
 	public BlueberryBlock getCurrentBlock() {
 		return m_currentBlock;
 	}
-	protected void advanceBlock(int i) {
-		m_currentBlock = m_currentBlock.getNextBlock(i);
+	/**
+	 * creates a new block backed by the same bytes but with an starting point shifted by the specified amount
+	 * @param wordOffset
+	 */
+	protected void advanceBlock(int wordOffset) {
+		m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
 	}
 	public BlueberryPacket getPacket() {
 		return m_packet;
