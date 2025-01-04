@@ -33,13 +33,13 @@ public class BlueberryPacket extends Packet {
 	}
 
 	@Override
-	public int computeCrc() {
+	public int computeCrc(int startWord) {
 		int result = -1;
 		
 		int pl = getByteLength();
 		Crc1021 crc = new Crc1021();
 
-		for(int i = 8; i < pl; ++i){
+		for(int i = startWord*4; i < pl; ++i){
 			byte b = get(i);
 			crc.addByte(b);
 		}
