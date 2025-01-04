@@ -47,4 +47,7 @@ public abstract class BlueberryPacketBuilder {
 	protected void advanceBlock(int i) {
 		m_currentBlock = m_currentBlock.getNextBlock(i);
 	}
+	public BlueberryPacket getPacket() {
+		return m_packet;
+	}
 }
