@@ -48,6 +48,9 @@ public class BlueberryBlock {
 		ByteBuffer bb = m_buf.slice(i, n - i);
 		return new BlueberryBlock(bb);
 	}
+	public int getCurrentByteIndex() {
+		return m_buf.arrayOffset();
+	}
 	
 	
 	public void writeFloat(FieldIndex i, int wordOffset, double v){
