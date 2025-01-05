@@ -38,6 +38,9 @@ public class BlueberryBlock {
 		m_buf = bb;
 		m_buf.order(ByteOrder.LITTLE_ENDIAN);
 	}
+	public static BlueberryBlock make(ByteBuffer bb, int wordOffset) {
+		return (new BlueberryBlock(bb)).getNextBlock(wordOffset);
+	}
 	/**
 	 * Makes a new block offset from this one by the specified number of bytes
 	 * @param i - the number of bytes to offset this block by when creating the new block
