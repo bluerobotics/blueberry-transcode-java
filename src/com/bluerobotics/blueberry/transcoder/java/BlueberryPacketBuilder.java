@@ -30,10 +30,16 @@ public abstract class BlueberryPacketBuilder {
 	private BlueberryPacket m_packet;
 	private final int m_maxByteCount;
 	private BlueberryBlock m_topLevelBlock;
-	private BlueberryBlock m_currentBlock;
+	private BlueberryBlock m_currentBlock = null;
 	public BlueberryPacketBuilder(int maxByteCount) {
 		m_maxByteCount = maxByteCount;
+		reset();
 	}
+	/**
+	 * Note that this doesn't generate the first current block
+	 * It is expected that subclasses will override this so that it does
+	 * If not, then the current block will never be non-null and exceptions will occur
+	 */
 	public void reset() {
 		m_packet = new BlueberryPacket(m_maxByteCount);
 		m_topLevelBlock = m_packet.getTopLevelBlock();
@@ -44,6 +50,11 @@ public abstract class BlueberryPacketBuilder {
 	public BlueberryBlock getCurrentBlock() {
 		return m_currentBlock;
 	}
+	/**
+	 * advance to the next block
+	 * this method is expected to be used by subclasses as part of the specific add block methods
+	 * @param i
+	 */
 	protected void advanceBlock(int i) {
 		m_currentBlock = m_currentBlock.getNextBlock(i);
 	}
