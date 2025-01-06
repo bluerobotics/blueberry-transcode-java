@@ -51,12 +51,12 @@ public abstract class BlueberryPacketBuilder {
 		return m_currentBlock;
 	}
 	/**
-	 * advance to the next block
-	 * this method is expected to be used by subclasses as part of the specific add block methods
-	 * @param i
+
+	 * creates a new block backed by the same bytes but with an starting point shifted by the specified amount
+	 * @param wordOffset
 	 */
-	protected void advanceBlock(int i) {
-		m_currentBlock = m_currentBlock.getNextBlock(i);
+	protected void advanceBlock(int wordOffset) {
+		m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
 	}
 	public BlueberryPacket getPacket() {
 		return m_packet;
