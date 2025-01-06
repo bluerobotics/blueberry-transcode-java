@@ -39,6 +39,6 @@ public abstract class BlueberryBlockParser {
 	 * compares the key in this block with its proper value
 	 * @return true if values match; false if the block value is incorrect
 	 */
-	public abstract boolean checkKey();
+	protected abstract boolean checkKey();
 	
 }
