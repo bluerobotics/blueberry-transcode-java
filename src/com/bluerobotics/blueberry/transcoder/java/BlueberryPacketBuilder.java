@@ -58,7 +58,19 @@ public abstract class BlueberryPacketBuilder {
 	protected void advanceBlock(int wordOffset) {
 		m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
 	}
+	/**
+	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
+	 * This method will be implemented by subclasses
+	 * It does not need to be called, it is called as part of the getPacket() method
+	 */
+	protected abstract void finish();
+	
+	/**
+	 * get the packet that was just constructed
+	 * @return
+	 */
 	public BlueberryPacket getPacket() {
+		finish();
 		return m_packet;
 	}
 }
