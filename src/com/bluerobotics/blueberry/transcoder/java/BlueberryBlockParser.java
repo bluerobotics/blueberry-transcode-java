@@ -41,4 +41,10 @@ public abstract class BlueberryBlockParser {
 	 */
 	protected abstract boolean checkKey();
 	
+	/**
+	 * this method is useful for calculating the start of the next block
+	 * @return the length of this block in words
+	 */
+	public abstract int getLength();
+	
 }
