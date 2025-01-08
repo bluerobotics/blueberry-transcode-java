@@ -27,7 +27,7 @@ import com.starfishmedical.comms.Packet;
 /**
  * 
  */
-public class BlueberryPacket extends Packet {
+public abstract class BlueberryPacket extends Packet {
 	protected BlueberryPacket(int bufferSize) {
 		super(bufferSize);
 	}
@@ -51,4 +51,5 @@ public class BlueberryPacket extends Packet {
 	public BlueberryBlock getTopLevelBlock() {
 		return new BlueberryBlock(getActualBuffer());
 	}
+	public abstract BlueberryBlock getFirstBlock();
 }
