@@ -27,7 +27,7 @@ import com.starfishmedical.comms.Packet;
 /**
  * 
  */
-public abstract class BlueberryPacket extends Packet {
+public class BlueberryPacket extends Packet {
 	protected BlueberryPacket(int bufferSize) {
 		super(bufferSize);
 	}
@@ -51,5 +51,13 @@ public abstract class BlueberryPacket extends Packet {
 	public BlueberryBlock getTopLevelBlock() {
 		return new BlueberryBlock(getActualBuffer());
 	}
-	public abstract BlueberryBlock getFirstBlock();
+	public int getWordLength() {
+		int result = getByteLength();
+		if((result & 0b11) != 0) {
+			result |= 0b11;
+			++result;
+		}
+		result >>= 2;//same as divide by 4
+		return result;
+	}
 }

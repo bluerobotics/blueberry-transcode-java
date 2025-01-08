@@ -22,33 +22,49 @@
 package com.bluerobotics.blueberry.transcoder.java;
 
 import java.util.HashMap;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 
 /**
- * 
+ * an abstract class for consuming the blocks of a packet
+ * T is the class that will consume each parsed block
  */
-public abstract class BlueberryPacketConsumerManager {
-	private final HashMap<Integer, Function<BlueberryBlock, BlueberryBlockParser>> m_consumers = new HashMap<Integer, Function<BlueberryBlock, BlueberryBlockParser>>();
+public abstract class BlueberryPacketConsumerManager<T> {
+	private final HashMap<Integer, Consumer<BlueberryBlock>> m_consumers = new HashMap<Integer, Consumer<BlueberryBlock>>();
+	private T m_parserConsumer;
 	
 	protected BlueberryPacketConsumerManager() {
 		
 	}
 	
-	protected void add(int key, Function<BlueberryBlock, BlueberryBlockParser> c) {
+	protected void add(int key, Consumer<BlueberryBlock> c) {
 		m_consumers.put(key, c);
 	}
 	
-	protected abstract int getKey(BlueberryBlock bb); 
-	protected abstract int getLength(BlueberryBlock bb); 
+	protected abstract int getBlockKey(BlueberryBlock bb); 
+	protected abstract int getBlockLength(BlueberryBlock bb); 
+	protected abstract BlueberryBlock getFirstBlock(BlueberryPacket p);
+	protected T getParserConsumer() {
+		return m_parserConsumer;
+	}
+	protected void setParserConsumer(T c) {
+		m_parserConsumer = c;
+	}
 	
 	/**
 	 * 
 	 * @param p
 	 * @param maxIndex
 	 */
-	public void processPacket(BlueberryPacket p, int maxIndex) {
-		BlueberryBlock bb = p.getFirstBlock();//this will be the start of the packet
+	public void processPacket(BlueberryPacket p) {
+		//don't do anything if there's no parser consumer set
+		if(getParserConsumer() == null) {
+			return;
+		}
+		BlueberryBlock bb = getFirstBlock(p);//this will be the first block after the header
+		while(bb.getCurrentWordIndex() < p.getWordLength()) {
+			m_consumers.get(getBlockKey(bb)).accept(bb);
+		}
 		
 		
 	}
