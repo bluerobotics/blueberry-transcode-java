@@ -42,9 +42,9 @@ public abstract class BlueberryBlockParser {
 	protected abstract boolean checkKey();
 	
 	/**
-	 * this method is useful for calculating the start of the next block
-	 * @return the length of this block in words
+	 * this method is useful to check if this parser has an empty block
+	 * @return true if the block is empty
 	 */
-	public abstract int getLength();
+	public abstract boolean isEmpty();
 	
 }

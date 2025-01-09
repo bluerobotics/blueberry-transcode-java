@@ -56,7 +56,11 @@ public abstract class BlueberryPacketBuilder {
 	 * @param wordOffset
 	 */
 	protected void advanceBlock(int wordOffset) {
-		m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
+		if(m_currentBlock == null) {
+			m_currentBlock = m_topLevelBlock;
+		} else {
+			m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
+		}
 	}
 	/**
 	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
