@@ -60,4 +60,6 @@ public class BlueberryPacket extends Packet {
 		result >>= 2;//same as divide by 4
 		return result;
 	}
+
+
 }

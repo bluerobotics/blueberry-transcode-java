@@ -33,8 +33,8 @@ public abstract class BlueberryPacketConsumerManager<T> {
 	private final HashMap<Integer, Consumer<BlueberryBlock>> m_consumers = new HashMap<Integer, Consumer<BlueberryBlock>>();
 	private T m_parserConsumer;
 	
-	protected BlueberryPacketConsumerManager() {
-		
+	protected BlueberryPacketConsumerManager(T parserConsumer) {
+		m_parserConsumer = parserConsumer;
 	}
 	
 	protected void add(int key, Consumer<BlueberryBlock> c) {
@@ -47,10 +47,7 @@ public abstract class BlueberryPacketConsumerManager<T> {
 	protected T getParserConsumer() {
 		return m_parserConsumer;
 	}
-	protected void setParserConsumer(T c) {
-		m_parserConsumer = c;
-	}
-	
+
 	/**
 	 * 
 	 * @param p
@@ -62,8 +59,13 @@ public abstract class BlueberryPacketConsumerManager<T> {
 			return;
 		}
 		BlueberryBlock bb = getFirstBlock(p);//this will be the first block after the header
+		//scan through all blocks in the packet
 		while(bb.getCurrentWordIndex() < p.getWordLength()) {
-			m_consumers.get(getBlockKey(bb)).accept(bb);
+			Consumer<BlueberryBlock> c = m_consumers.get(getBlockKey(bb));
+			if(c != null) {//is there a known consumer for this type of parser?
+				c.accept(bb);//process this block with the consumer we found
+			}
+			bb = bb.getNextBlock(getBlockLength(bb));//get next block
 		}
 		
 		

@@ -9,12 +9,13 @@ import com.starfishmedical.comms.PacketReceiver;
 /**
  * 
  */
-public class BlueberryReceiver extends PacketReceiver {
-	private Packet m_packet;
+public abstract class BlueberryReceiver extends PacketReceiver {
+	private static final int BUFF_MAX_SIZE = 10000;
+
 	@Override
-	public void use(byte[] bs, int bo, int bl) {
-		// TODO Auto-generated method stub
-		
+	protected Packet makeNewPacket() {
+		return new BlueberryPacket(BUFF_MAX_SIZE);
 	}
+
 
 }
