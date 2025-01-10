@@ -113,7 +113,18 @@ public class BlueberryBlock {
 		if(bb.m_buf.array() != m_buf.array()) {
 			throw new RuntimeException("Can't set block position with position from block with different underlying arrays.");
 		}
-		int i = bb.m_byteOffset + m_buf.position() - m_byteOffset;
+		int i = bb.m_byteOffset;
 		m_buf.position(i);
+	}
+	@Override
+	public String toString() {
+		String s = "0x";
+		for(int i = 0; i < 8; ++i) {
+			byte b = m_buf.get(i + m_byteOffset);
+			String s2 = Integer.toHexString(b);
+			s += "0".repeat(2 - s2.length()) + s2;
+				
+		}
+		return getClass().getName()+"("+s+"...)";
 	}
 }
