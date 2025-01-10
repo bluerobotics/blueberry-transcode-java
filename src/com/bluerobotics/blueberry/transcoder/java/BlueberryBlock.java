@@ -28,6 +28,7 @@ import java.nio.ByteOrder;
  * 
  */
 public class BlueberryBlock {
+	private int m_byteOffset = 0;
 	private ByteBuffer m_buf;
 	/**
 	 * wraps the supplied buffer in a block.
@@ -36,25 +37,24 @@ public class BlueberryBlock {
 	 */
 	public BlueberryBlock(ByteBuffer bb) {
 		m_buf = bb;
+		m_byteOffset = 0;
 		m_buf.order(ByteOrder.LITTLE_ENDIAN);
 	}
-	public static BlueberryBlock make(ByteBuffer bb, int wordOffset) {
-		return (new BlueberryBlock(bb)).getNextBlock(wordOffset);
-	}
+	
 	/**
 	 * Makes a new block offset from this one by the specified number of bytes
 	 * @param i - the number of bytes to offset this block by when creating the new block
 	 * @return - the new block that is offset from this one.
 	 */
 	public BlueberryBlock getNextBlock(int wordOffset) {
-		int n = m_buf.capacity();
 		int i = wordOffset * 4;
-		ByteBuffer bb = m_buf.slice(i, n - i);
-		bb.position(0);
-		return new BlueberryBlock(bb);
+		BlueberryBlock result = new BlueberryBlock(m_buf);
+		result.m_byteOffset = m_byteOffset + i;
+
+		return result;
 	}
 	public int getCurrentWordIndex() {
-		int i = m_buf.arrayOffset();
+		int i = m_byteOffset;
 		if((i & 0b11) != 0) {
 			throw new RuntimeException("Somehow the buffer length is not a multiple of 4!");
 		}
@@ -63,28 +63,28 @@ public class BlueberryBlock {
 	
 	
 	public void writeFloat(FieldIndex i, int wordOffset, double v){
-		m_buf.putFloat(i.getIndex() + 4*wordOffset, (float)v);
+		m_buf.putFloat(i.getIndex() + 4*wordOffset + m_byteOffset, (float)v);
 	}
 	public void writeInt(FieldIndex i, int wordOffset, int v) {
-		m_buf.putInt(i.getIndex() + 4*wordOffset,  v);
+		m_buf.putInt(i.getIndex() + 4*wordOffset + m_byteOffset,  v);
 	}
 	public void writeByte(FieldIndex i, int wordOffset, int v) {
-		m_buf.put(i.getIndex() + 4*wordOffset, (byte)v);
+		m_buf.put(i.getIndex() + 4*wordOffset + m_byteOffset, (byte)v);
 	}
 	public void writeShort(FieldIndex i, int wordOffset, int v) {
-		m_buf.putShort(i.getIndex() + 4*wordOffset, (short)v);
+		m_buf.putShort(i.getIndex() + 4*wordOffset + m_byteOffset, (short)v);
 	}
 	public double readFloat(FieldIndex i, int wordOffset) {
-		return m_buf.getFloat(i.getIndex() + 4*wordOffset);
+		return m_buf.getFloat(i.getIndex() + 4*wordOffset + m_byteOffset);
 	}
 	public int readInt(FieldIndex i, int wordOffset) {
-		return m_buf.getInt(i.getIndex() + 4*wordOffset);
+		return m_buf.getInt(i.getIndex() + 4*wordOffset + m_byteOffset);
 	}
 	public int readByte(FieldIndex i, int wordOffset) {
-		return m_buf.get(i.getIndex() + 4*wordOffset);
+		return m_buf.get(i.getIndex() + 4*wordOffset + m_byteOffset);
 	}
 	public int readShort(FieldIndex i, int wordOffset) {
-		return m_buf.getShort(i.getIndex() + 4*wordOffset);
+		return m_buf.getShort(i.getIndex() + 4*wordOffset + m_byteOffset);
 	}
 	public void writeBool(BitIndex i, int wordOffset, boolean v) {
 		if(i.getBitIndex() > 7) {
@@ -102,7 +102,7 @@ public class BlueberryBlock {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i,  + 4*wordOffset) & (1<<i.getBitIndex());
+		int bv = readByte(i, wordOffset) & (1<<i.getBitIndex());
 		return bv != 0;
 	}
 	/**
@@ -113,7 +113,7 @@ public class BlueberryBlock {
 		if(bb.m_buf.array() != m_buf.array()) {
 			throw new RuntimeException("Can't set block position with position from block with different underlying arrays.");
 		}
-		int i = bb.m_buf.arrayOffset()+m_buf.position() - m_buf.arrayOffset();
+		int i = bb.m_byteOffset + m_buf.position() - m_byteOffset;
 		m_buf.position(i);
 	}
 }

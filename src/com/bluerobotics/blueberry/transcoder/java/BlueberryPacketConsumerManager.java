@@ -60,7 +60,8 @@ public abstract class BlueberryPacketConsumerManager<T> {
 		}
 		BlueberryBlock bb = getFirstBlock(p);//this will be the first block after the header
 		//scan through all blocks in the packet
-		while(bb.getCurrentWordIndex() < p.getWordLength()) {
+		int n = p.getWordLength();
+		while(bb.getCurrentWordIndex() < n) {
 			Consumer<BlueberryBlock> c = m_consumers.get(getBlockKey(bb));
 			if(c != null) {//is there a known consumer for this type of parser?
 				c.accept(bb);//process this block with the consumer we found

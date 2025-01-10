@@ -58,9 +58,8 @@ public abstract class BlueberryPacketBuilder {
 	protected void advanceBlock(int wordOffset) {
 		if(m_currentBlock == null) {
 			m_currentBlock = m_topLevelBlock;
-		} else {
-			m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
 		}
+		m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
 		m_topLevelBlock.setPosition(m_currentBlock);
 	}
 	/**
