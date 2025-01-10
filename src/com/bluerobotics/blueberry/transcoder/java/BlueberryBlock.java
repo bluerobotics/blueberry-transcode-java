@@ -50,6 +50,7 @@ public class BlueberryBlock {
 		int n = m_buf.capacity();
 		int i = wordOffset * 4;
 		ByteBuffer bb = m_buf.slice(i, n - i);
+		bb.position(0);
 		return new BlueberryBlock(bb);
 	}
 	public int getCurrentWordIndex() {
@@ -103,5 +104,16 @@ public class BlueberryBlock {
 		}
 		int bv = readByte(i,  + 4*wordOffset) & (1<<i.getBitIndex());
 		return bv != 0;
+	}
+	/**
+	 * updates this block's position with the index of the specified block
+	 * @param bb
+	 */
+	public void setPosition(BlueberryBlock bb) {
+		if(bb.m_buf.array() != m_buf.array()) {
+			throw new RuntimeException("Can't set block position with position from block with different underlying arrays.");
+		}
+		int i = bb.m_buf.arrayOffset()+m_buf.position() - m_buf.arrayOffset();
+		m_buf.position(i);
 	}
 }

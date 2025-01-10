@@ -36,15 +36,15 @@ public class BlueberryPacket extends Packet {
 	public int computeCrc(int startWord) {
 		int result = -1;
 		
-		int pl = getByteLength();
+		int pl = getWordLength()*4;
 		Crc1021 crc = new Crc1021();
 
 		for(int i = startWord*4; i < pl; ++i){
 			byte b = get(i);
-			crc.addByte(b);
+			crc.addByte1021(b);
 		}
 			
-			result = crc.getCrc();
+		result = crc.getCrc();
 		
 		return result;
 	}

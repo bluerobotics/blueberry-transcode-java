@@ -61,6 +61,7 @@ public abstract class BlueberryPacketBuilder {
 		} else {
 			m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
 		}
+		m_topLevelBlock.setPosition(m_currentBlock);
 	}
 	/**
 	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
@@ -74,7 +75,6 @@ public abstract class BlueberryPacketBuilder {
 	 * @return
 	 */
 	public BlueberryPacket getPacket() {
-		finish();
 		return m_packet;
 	}
 }
