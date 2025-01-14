@@ -66,8 +66,9 @@ public abstract class BlueberryPacketBuilder {
 	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
 	 * This method will be implemented by subclasses
 	 * It does not need to be called, it is called as part of the getPacket() method
+	 * @param omputeCrc - indicates whether the CRC should be computed for the paket header.
 	 */
-	protected abstract void finish();
+	protected abstract void finish(boolean computeCrc);
 	
 	/**
 	 * get the packet that was just constructed
