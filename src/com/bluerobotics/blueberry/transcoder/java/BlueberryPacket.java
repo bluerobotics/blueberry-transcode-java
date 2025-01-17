@@ -21,6 +21,8 @@ THE SOFTWARE.
 */
 package com.bluerobotics.blueberry.transcoder.java;
 
+import java.nio.ByteBuffer;
+
 import com.starfishmedical.comms.Crc1021;
 import com.starfishmedical.comms.Packet;
 
@@ -41,7 +43,8 @@ public class BlueberryPacket extends Packet {
 
 		for(int i = startWord*4; i < pl; ++i){
 			byte b = get(i);
-			crc.addByte1021(b);
+//			crc.addByte1021(b);
+			crc.addByte(b);
 		}
 			
 		result = crc.getCrc();
@@ -59,6 +62,23 @@ public class BlueberryPacket extends Packet {
 		}
 		result >>= 2;//same as divide by 4
 		return result;
+	}
+	public String toString() {
+		String s = getClass().getName();
+		s += "(";
+		ByteBuffer bb = getActualBuffer();
+		boolean firstTime = true;
+		int pl = getWordLength()*4;
+		for(int i = 0; i < pl; ++i) {
+			byte b = bb.get(i);
+			if(!firstTime) {
+				s += ",";
+			}
+			firstTime = false;
+			s += " 0x"+Integer.toHexString(((int)b) & 0xff);
+		}
+		s += " )";
+		return s;
 	}
 
 
