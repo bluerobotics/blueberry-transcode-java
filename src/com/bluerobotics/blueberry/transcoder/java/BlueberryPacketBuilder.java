@@ -41,8 +41,11 @@ public abstract class BlueberryPacketBuilder {
 	 * If not, then the current block will never be non-null and exceptions will occur
 	 */
 	public void reset() {
+		m_currentBlock = null;
 		m_packet = new BlueberryPacket(m_maxByteCount);
+		
 		m_topLevelBlock = m_packet.getTopLevelBlock();
+		
 	}
 	public BlueberryBlock getTopLevelBlock() {
 		return m_topLevelBlock;

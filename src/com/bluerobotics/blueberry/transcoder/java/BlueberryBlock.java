@@ -29,7 +29,7 @@ import java.nio.ByteOrder;
  */
 public class BlueberryBlock {
 	private int m_byteOffset = 0;
-	private ByteBuffer m_buf;
+	private final ByteBuffer m_buf;
 	/**
 	 * wraps the supplied buffer in a block.
 	 * Buffer starting location (index = 0) is assumed to be the beginning of block
