@@ -43,7 +43,7 @@ public class BlueberryBlock {
 	
 	/**
 	 * Makes a new block offset from this one by the specified number of bytes
-	 * @param i - the number of bytes to offset this block by when creating the new block
+	 * @param wordOffset - the number of 4-byte words to offset this block by when creating the new block
 	 * @return - the new block that is offset from this one.
 	 */
 	public BlueberryBlock getNextBlock(int wordOffset) {
@@ -62,47 +62,47 @@ public class BlueberryBlock {
 	}
 	
 	
-	public void writeFloat(FieldIndex i, int wordOffset, double v){
-		m_buf.putFloat(i.getIndex() + 4*wordOffset + m_byteOffset, (float)v);
+	public void writeFloat(FieldIndex i, int byteOffset, double v){
+		m_buf.putFloat(i.getIndex() + byteOffset + m_byteOffset, (float)v);
 	}
-	public void writeInt(FieldIndex i, int wordOffset, int v) {
-		m_buf.putInt(i.getIndex() + 4*wordOffset + m_byteOffset,  v);
+	public void writeInt(FieldIndex i, int byteOffset, int v) {
+		m_buf.putInt(i.getIndex() + byteOffset + m_byteOffset,  v);
 	}
-	public void writeByte(FieldIndex i, int wordOffset, int v) {
-		m_buf.put(i.getIndex() + 4*wordOffset + m_byteOffset, (byte)v);
+	public void writeByte(FieldIndex i, int byteOffset, int v) {
+		m_buf.put(i.getIndex() + byteOffset + m_byteOffset, (byte)v);
 	}
-	public void writeShort(FieldIndex i, int wordOffset, int v) {
-		m_buf.putShort(i.getIndex() + 4*wordOffset + m_byteOffset, (short)v);
+	public void writeShort(FieldIndex i, int byteOffset, int v) {
+		m_buf.putShort(i.getIndex() + byteOffset + m_byteOffset, (short)v);
 	}
-	public double readFloat(FieldIndex i, int wordOffset) {
-		return m_buf.getFloat(i.getIndex() + 4*wordOffset + m_byteOffset);
+	public double readFloat(FieldIndex i, int byteOffset) {
+		return m_buf.getFloat(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public int readInt(FieldIndex i, int wordOffset) {
-		return m_buf.getInt(i.getIndex() + 4*wordOffset + m_byteOffset);
+	public int readInt(FieldIndex i, int byteOffset) {
+		return m_buf.getInt(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public int readByte(FieldIndex i, int wordOffset) {
-		return m_buf.get(i.getIndex() + 4*wordOffset + m_byteOffset);
+	public int readByte(FieldIndex i, int byteOffset) {
+		return m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public int readShort(FieldIndex i, int wordOffset) {
-		return m_buf.getShort(i.getIndex() + 4*wordOffset + m_byteOffset);
+	public int readShort(FieldIndex i, int byteOffset) {
+		return m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public void writeBool(BitIndex i, int wordOffset, boolean v) {
+	public void writeBool(BitIndex i, int byteOffset, boolean v) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i, wordOffset);
+		int bv = readByte(i, byteOffset);
 		if(v) {
 			bv |= 1<<i.getBitIndex();
 		} else {
 			bv &= ~(1<<i.getBitIndex());
 		}
-		writeByte(i, wordOffset, bv);
+		writeByte(i, byteOffset, bv);
 	}
-	public boolean readBool(BitIndex i, int wordOffset) {
+	public boolean readBool(BitIndex i, int byteOffset) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i, wordOffset) & (1<<i.getBitIndex());
+		int bv = readByte(i, byteOffset) & (1<<i.getBitIndex());
 		return bv != 0;
 	}
 	/**
