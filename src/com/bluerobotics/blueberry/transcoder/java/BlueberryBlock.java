@@ -83,6 +83,13 @@ public class BlueberryBlock {
 	public int readByte(FieldIndex i, int byteOffset) {
 		return m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
 	}
+	public int readUnsignedByte(FieldIndex i, int byteOffset) {
+		int result = (int) m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
+		if(result < 0) {
+			result += 256;
+		}
+		return result;
+	}
 	public int readShort(FieldIndex i, int byteOffset) {
 		return m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
 	}
