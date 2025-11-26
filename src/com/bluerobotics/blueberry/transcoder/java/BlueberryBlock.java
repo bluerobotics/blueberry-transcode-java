@@ -134,4 +134,7 @@ public class BlueberryBlock {
 		}
 		return getClass().getName()+"("+s+"...)";
 	}
+	public int getBufferHash() {
+		return m_buf.hashCode();
+	}
 }
