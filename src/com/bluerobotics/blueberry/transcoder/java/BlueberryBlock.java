@@ -65,6 +65,13 @@ public class BlueberryBlock {
 	public void writeFloat(FieldIndex i, int byteOffset, double v){
 		m_buf.putFloat(i.getIndex() + byteOffset + m_byteOffset, (float)v);
 	}
+	
+	public void writeUnsignedShort(FieldIndex i, int byteOffset, int v) {
+		m_buf.putShort(i.getIndex() + byteOffset + m_byteOffset, (short)(v & 0xffff));
+	}
+	public void writeUnsignedByte(FieldIndex i, int byteOffset, int v) {
+		m_buf.put(i.getIndex() + byteOffset + m_byteOffset, (byte)(v & 0xff));
+	}
 	public void writeInt(FieldIndex i, int byteOffset, int v) {
 		m_buf.putInt(i.getIndex() + byteOffset + m_byteOffset,  v);
 	}
@@ -82,6 +89,14 @@ public class BlueberryBlock {
 	}
 	public int readByte(FieldIndex i, int byteOffset) {
 		return m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
+	}
+	public int readUnsignedShort(FieldIndex i, int byteOffset) {
+		int result = m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
+		if(result < 0) {
+			result += 65536;
+		}
+		return result;
+		
 	}
 	public int readUnsignedByte(FieldIndex i, int byteOffset) {
 		int result = (int) m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
