@@ -62,7 +62,8 @@ public abstract class BlueberryPacketConsumerManager<T> {
 		//scan through all blocks in the packet
 		int n = p.getWordLength();
 		while(bb.getCurrentWordIndex() < n) {
-			Consumer<BlueberryBlock> c = m_consumers.get(getBlockKey(bb));
+			int key = getBlockKey(bb);
+			Consumer<BlueberryBlock> c = m_consumers.get(key);
 			if(c != null) {//is there a known consumer for this type of parser?
 				c.accept(bb);//process this block with the consumer we found
 			}
