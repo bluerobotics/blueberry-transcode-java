@@ -80,6 +80,9 @@ public class BlueberryBlock {
 	public int readInt(FieldIndex i, int byteOffset) {
 		return m_buf.getInt(i.getIndex() + byteOffset + m_byteOffset);
 	}
+	public long readLong(FieldIndex i, int byteOffset) {
+		return m_buf.getLong(i.getIndex() + byteOffset + m_byteOffset);
+	}
 	public int readByte(FieldIndex i, int byteOffset) {
 		return m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
 	}
