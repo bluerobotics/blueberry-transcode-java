@@ -32,7 +32,7 @@ public abstract class BlueberryBlockParser {
 			throw new RuntimeException("Key value check failed on this block!");
 		}
 	}
-	protected BlueberryBlock getBlock() {
+	public BlueberryBlock getBlock() {
 		return m_bb;
 	}
 	/**
