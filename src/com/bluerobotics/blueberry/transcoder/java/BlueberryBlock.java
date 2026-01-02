@@ -23,11 +23,15 @@ package com.bluerobotics.blueberry.transcoder.java;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 
  */
 public class BlueberryBlock {
+	private static final Charset CHAR_ENC = StandardCharsets.UTF_8;
+
 	private int m_byteOffset = 0;
 	private final ByteBuffer m_buf;
 	/**
@@ -90,8 +94,32 @@ public class BlueberryBlock {
 	public long readLong(FieldIndex i, int byteOffset) {
 		return m_buf.getLong(i.getIndex() + byteOffset + m_byteOffset);
 	}
+	public void writeLong(FieldIndex i, int byteOffset, long v) {
+		m_buf.putLong(i.getIndex() + byteOffset + m_byteOffset, v);
+	}
+	public double readDouble(FieldIndex i, int byteOffset) {
+		return m_buf.getDouble(i.getIndex() + byteOffset + m_byteOffset);
+	}
+	public void writeDouble(FieldIndex i, int byteOffset, double v) {
+		m_buf.putDouble(i.getIndex() + byteOffset + m_byteOffset, v);
+	}
 	public int readByte(FieldIndex i, int byteOffset) {
 		return m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
+	}
+	
+	public String getString(FieldIndex i, int byteOffset) {
+		
+		int j = i.getIndex() + byteOffset + m_byteOffset;
+		int n = m_buf.getInt();
+		return CHAR_ENC.decode(m_buf.slice(j+4,n)).toString();
+	}
+	public void putString(FieldIndex i, int byteOffset, String s) {
+		int n = s.length();
+		int j = i.getIndex() + byteOffset + m_byteOffset;
+
+		ByteBuffer bs = CHAR_ENC.encode(s);
+		m_buf.putInt(j, n);
+		m_buf.put(j+4, bs, 0, n);
 	}
 	public int readUnsignedShort(FieldIndex i, int byteOffset) {
 		int result = m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
