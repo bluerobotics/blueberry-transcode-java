@@ -25,20 +25,7 @@ package com.bluerobotics.blueberry.transcoder.java;
  * 
  */
 public interface FieldIndex {
-//	public enum BitNum {
-//		ONE_BIT(1),
-//		ONE_BYTE(8),
-//		TWO_BYTES(16),
-//		FOUR_BYTES(32)
-//		;
-//		private int bits;
-//		private BitNum(int b) {
-//			bits = b;
-//		}
-//		public int getBits() {
-//			return bits;
-//		}
-//	}
+	public static final FieldIndex ZERO = (() -> 0);
 	int getIndex();
-	int getBits();
+	
 }
