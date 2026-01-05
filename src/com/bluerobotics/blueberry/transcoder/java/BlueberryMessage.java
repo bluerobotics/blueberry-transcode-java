@@ -9,6 +9,15 @@ package com.bluerobotics.blueberry.transcoder.java;
  * Note that messages are either created from a received packet, or they are built in a packet being built for transmission
  */
 public abstract class BlueberryMessage {
+	public interface MessageLookup {
+		/**
+		 * determines the message type from the provided module/message key and wraps the corresponding message type around the provided buffer
+		 * the buffer is assumed to point to the start of the message (message sub-header), NOT the key field (message header)
+		 * @param key
+		 * @return
+		 */
+		BlueberryMessage wrap(int key, BlueberryBuffer buf);
+	}
 	public static final int SIZE_INDEX = 0;
 	public static final int MAX_ORD_INDEX = 2;
 	protected final BlueberryBuffer m_buf;
@@ -28,6 +37,7 @@ public abstract class BlueberryMessage {
 		int i = m_buf.readShort(FieldIndex.ZERO, SIZE_INDEX);
 		return i * 4;
 	}
+
 	/**
 	 * compute the maximum number of top-level fields in this message, as defined by the IDL schema.
 	 * This is useful to determine which fields might be present in this message
@@ -59,4 +69,10 @@ public abstract class BlueberryMessage {
 	public void writeMaxOrdinal(int ord) {
 		m_buf.writeByte(FieldIndex.ZERO, MAX_ORD_INDEX, ord);
 	}
+	/**
+	 * gets the 4-byte word formed from the combination of the module key and the message key
+	 * Because the message encoding is little endian, the 4-byte result has the module key in the LSBs and the message key in the MSBs
+	 * @return
+	 */
+	public abstract int getModuleMessageKey();
 }

@@ -49,11 +49,11 @@ public class BlueberryBuffer {
 	
 	/**
 	 * Makes a new buffer offset from this one by the specified number of bytes
-	 * @param wordOffset - the number of 4-byte words to offset this buffer by when creating the new buffer
+	 * @param offset - the number of bytes to offset this buffer by when creating the new buffer
 	 * @return - the new buffer that is offset from this one.
 	 */
-	public BlueberryBuffer getNextBuffer(int wordOffset) {
-		int i = wordOffset * 4;
+	public BlueberryBuffer getNextBuffer(int offset) {
+		int i = offset;
 		BlueberryBuffer result = new BlueberryBuffer(m_buf);
 		result.m_byteOffset = m_byteOffset + i;
 
@@ -65,7 +65,15 @@ public class BlueberryBuffer {
 		return i;
 	}
 	
-	
+	/**
+	 * puts the specified byte into the buffer
+	 * @param b - the byte to add
+	 * @return - the number of bytes in the buffer
+	 */
+	public int put(byte b) {
+		m_buf.put(b);
+		return m_buf.position();
+	}
 	public void writeFloat(FieldIndex i, int byteOffset, double v){
 		m_buf.putFloat(i.getIndex() + byteOffset + m_byteOffset, (float)v);
 	}
@@ -197,5 +205,19 @@ public class BlueberryBuffer {
 			m_buf = m_buf.asReadOnlyBuffer();
 			m_buf.order(BYTE_ORDER);
 		}
+	}
+	/**
+	 * gets the length of this buffer in bytes
+	 * This is the length of useful data in the buffer so far, not the maximum possible length of the underlying byte array
+	 * @return
+	 */
+	public int getLength() {
+		int result = -1;
+		if(isComplete()) {
+			result = m_buf.limit();
+		} else {
+			result = m_buf.position();
+		}
+		return result;
 	}
 }
