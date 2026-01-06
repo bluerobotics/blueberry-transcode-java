@@ -239,6 +239,8 @@ public class BlueberryPacket {
 			return j < p.getPublishedWordLength()*4;
 		}
 		
+		
+		
 		@Override
 		public BlueberryMessage next() {
 			if(msg == null) {
@@ -253,6 +255,10 @@ public class BlueberryPacket {
 		}
 		
 		
+	}
+	
+	public BlueberryBuffer getDataBuffer() {
+		return m_buf.getNextBuffer(DATA_INDEX);
 	}
 	
 

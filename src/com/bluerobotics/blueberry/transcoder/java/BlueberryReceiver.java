@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.bluerobotics.blueberry.transcoder.java.BlueberryMessage.MessageLookup;
 import com.starfishmedical.comms.Packet;
@@ -34,11 +36,13 @@ public abstract class BlueberryReceiver {
 	private long maxByteTime = 0;
 	private boolean m_checkCrc = true;
 	private int m_rxCount = 0;
-	private MessageLookup m_msgLookup;
-	public interface MessageParser {
-		public void parse(BlueberryMessage msg);
+	private final BlueberryMessageParser m_processor;
+	
+	
+	public BlueberryReceiver(BlueberryMessageParser processor) {
+		m_processor = processor;
 	}
-	private  HashMap<Class<? extends BlueberryMessage>, MessageParser> m_parsers = new HashMap<>();
+
 
 	/**
 	 * processes the specified bytes from the incoming array
@@ -65,9 +69,7 @@ public abstract class BlueberryReceiver {
 	}
 
 
-	public void addParser(Class<? extends BlueberryMessage> c, MessageParser p) {
-		m_parsers.put(c,  p);
-	}
+	
 	
 
 
@@ -122,7 +124,7 @@ public abstract class BlueberryReceiver {
 	protected void publish(BlueberryPacket p) {
 		p.complete();
 		++m_rxCount;
-		EXECUTOR.submit(() -> parse(p), "PacketReceiver.publish");
+		EXECUTOR.submit(() -> m_processor.parse(p), "PacketReceiver.publish");
 		reset();
 
 	}
@@ -131,17 +133,7 @@ public abstract class BlueberryReceiver {
 		return m_rxCount;
 	}
 	
-	
 
-	private void parse(BlueberryPacket p){
-		Iterator<BlueberryMessage> ms = p.getMessages(m_msgLookup);
-		while(ms.hasNext()) {
-			BlueberryMessage m = ms.next();
-			MessageParser mp = m_parsers.get(m.getClass());
-			if(mp != null) {
-				mp.parse(m);
-			}
-		}
-	}
+	
 
 }

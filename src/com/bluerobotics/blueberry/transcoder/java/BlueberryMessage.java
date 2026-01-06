@@ -34,7 +34,15 @@ public abstract class BlueberryMessage {
 	 * @return
 	 */
 	public int getLength() {
-		int i = m_buf.readShort(FieldIndex.ZERO, SIZE_INDEX);
+		return getLength(m_buf);
+	}
+	/**
+	 * gets the length of the message contained in the specified buffer, measured in bytes.
+	 * @param buf
+	 * @return
+	 */
+	public static int getLength(BlueberryBuffer buf) {
+		int i = buf.readShort(FieldIndex.ZERO, SIZE_INDEX);
 		return i * 4;
 	}
 
@@ -75,4 +83,5 @@ public abstract class BlueberryMessage {
 	 * @return
 	 */
 	public abstract int getModuleMessageKey();
+
 }

@@ -64,6 +64,9 @@ public class BlueberryBuffer {
 		
 		return i;
 	}
+	public boolean isEmpty() {
+		return m_byteOffset > m_buf.limit();
+	}
 	
 	/**
 	 * puts the specified byte into the buffer
