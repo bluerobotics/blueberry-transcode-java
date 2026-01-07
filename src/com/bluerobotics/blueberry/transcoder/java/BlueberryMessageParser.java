@@ -33,7 +33,7 @@ public class BlueberryMessageParser {
 			buf = buf.getNextBuffer(4);//skip past the transport header now that we have the key
 			
 			parse(key, buf);
-			int offset = 4 + BlueberryMessage.getLength(buf);//skip the sub-header and all the message data
+			int offset = 4 + BlueberryMessage.getByteLength(buf);//skip the sub-header and all the message data
 			buf = buf.getNextBuffer(offset);
 		}
 		
