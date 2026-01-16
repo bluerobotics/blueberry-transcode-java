@@ -4,22 +4,14 @@
 package com.bluerobotics.blueberry.transcoder.java;
 
 import java.nio.BufferOverflowException;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import com.bluerobotics.blueberry.transcoder.java.BlueberryMessage.MessageLookup;
-import com.starfishmedical.comms.Packet;
-import com.starfishmedical.comms.PacketReceiver;
 
 /**
  * 
  */
-public abstract class BlueberryReceiver {
+public class BlueberryReceiver {
 	protected static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(1, new ThreadFactory(){
 		@Override
 		public Thread newThread(Runnable r) {
@@ -35,7 +27,6 @@ public abstract class BlueberryReceiver {
 	private long lastByteTime = 0;
 	private long maxByteTime = 0;
 	private boolean m_checkCrc = true;
-	private int m_rxCount = 0;
 	private final BlueberryMessageParser m_processor;
 	
 	
@@ -67,11 +58,6 @@ public abstract class BlueberryReceiver {
 		}
 		return result;
 	}
-
-
-	
-	
-
 
 	
 	/**
@@ -123,17 +109,12 @@ public abstract class BlueberryReceiver {
 	 */
 	protected void publish(BlueberryPacket p) {
 		p.complete();
-		++m_rxCount;
 		EXECUTOR.submit(() -> m_processor.parse(p), "PacketReceiver.publish");
 		reset();
 
 	}
 	
-	public int getRxCount() {
-		return m_rxCount;
-	}
 	
-
 	
 
 }
