@@ -27,5 +27,15 @@ package com.bluerobotics.blueberry.transcoder.java;
 public interface FieldIndex {
 	public static final FieldIndex ZERO = (() -> 0);
 	int getIndex();
+	public static FieldIndex make(int i) {
+		return () -> {
+			return i;
+		};
+	}
+	public static FieldIndex make(FieldIndex i, int offset) {
+		return () -> {
+			return i.getIndex() + offset;
+		};
+	}
 	
 }

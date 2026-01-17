@@ -36,11 +36,20 @@ public abstract class BlueberryMessage {
 		 */
 		BlueberryMessage wrap(int key, BlueberryBuffer buf);
 	}
-	public static final int MODULE_KEY_INDEX = 0;
-	public static final int MESSAGE_KEY_INDEX = 2;
-	public static final int SIZE_INDEX = 4;
-	public static final int MAX_ORD_INDEX = 6;
+	protected static final int MODULE_MESSAGE_KEY_INDEX = 0;
+	protected static final int SIZE_INDEX = 4;
+	protected static final int MAX_ORD_INDEX = 6;
+	protected static final int FIRST_MESSAGE_INDEX = 8;
+	protected static final int STRING_BLOCK_LENGTH_INDEX = 0;
+	protected static final int STRING_BLOCK_DATA_START_INDEX = 4;
+	protected static final int STRING_PLACEHOLDER_BLOCK_INDEX = 0;
+	protected static final int SEQUENCE_PLACEHOLDER_BLOCK_INDEX = 0;
+	protected static final int SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX = 2;
+	protected static final int SEQUENCE_BLOCK_LENGTH_INDEX = 0;
+	protected static final int SEQUENCE_BLOCK_DATA_START_INDEX = 4;
+
 	protected final BlueberryBuffer m_buf;
+	
 	/**
 	 * Inits the fields of this message
 	 * @param b - the buffer that contains his message
@@ -49,6 +58,25 @@ public abstract class BlueberryMessage {
 	public BlueberryMessage(BlueberryBuffer b) {
 		m_buf = b;
 	}
+	/**
+	 * starts a new message in the specified buffer with the intention of building it for transmission
+	 * The buffer must have zero length initially. It will be grown as data is added.
+	 * Upon completion of this method, the message length will only include the header information
+	 * @param b
+	 * @param key - the module/message key to include in the message header
+	 * @param maxOrdinal - the maximum ordinal value of all the fields to be populated
+	 */
+	public BlueberryMessage(BlueberryBuffer b, int key, int maxOrdinal) {
+		if(b.getLength() > 0) {
+			throw new RuntimeException("A buffer must be empty prior to constructing a new message.");
+		}
+		m_buf = b;
+		b.grow(FIRST_MESSAGE_INDEX, 4);
+		b.writeInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX, key);
+		b.writeInt16(FieldIndex.ZERO, MAX_ORD_INDEX, maxOrdinal);
+	}
+	
+
 
 	/**
 	 * gets the length of the message contained in the specified buffer, measured in bytes.
@@ -60,69 +88,116 @@ public abstract class BlueberryMessage {
 		int i = buf.readUint16(FieldIndex.ZERO, SIZE_INDEX);
 		return i * 4;
 	}
+	protected int getByteLength() {
+		return m_buf.readUint16(FieldIndex.ZERO, SIZE_INDEX) * 4;
+	}
+	protected void updateByteLength() {
+		m_buf.align(4);
+		int len = m_buf.getLength()/4;
+		m_buf.writeUint16(FieldIndex.ZERO, SIZE_INDEX, len);
+	}
+	protected void setMaxOrdinal(int i) {
+		m_buf.writeUint8(FieldIndex.ZERO, MAX_ORD_INDEX, i);
+	}
+	protected int getMaxOrdinal() {
+		return m_buf.readUint8(FieldIndex.ZERO, MAX_ORD_INDEX);
+	}
 	/**
 	 * gets the module/message key from the specified buffer.
 	 * This is useful to establish the message key prior to actually parsing the message
 	 * @param buf
 	 * @return
 	 */
-	public static int getModuleMessageKey(BlueberryBuffer buf) {
-		return buf.readInt32(FieldIndex.ZERO, MODULE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
+	protected static int getModuleMessageKey(BlueberryBuffer buf) {
+		return buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
 	}
 
+	
+
+
+	
 	/**
-	 * gets the 4-byte word formed from the combination of the module key and the message key
-	 * Because the message encoding is little endian, the 4-byte result has the module key in the LSBs and the message key in the MSBs
-	 * This method should be added by the automatic schema parser and should not need to be hand-coded
-	 * This is defined here so that this class has access to the method.
-	 * Note that if the schema is edited such that it does not have this field then a compilation error will likely result
+	 * retrieves a string given the index and offset of the string placeholder in the message
+	 * the placeholder consists of the following:
+	 * - uint16 index - the index of the string block
+	 * - uint16 unused
+	 * the string block consists f the following:
+	 * - uint32 length - the number of characters of the string
+	 * - uint8... the characters of the string
+	 * @param i - the index of the message
+	 * @param offset - the offset into the message of the string placeholder
+	 * @return the string
+	 */
+	protected String getString(FieldIndex i, int offset) {
+		FieldIndex sb = FieldIndex.make(m_buf.readUint16(i, offset + STRING_PLACEHOLDER_BLOCK_INDEX));
+		
+		int len = m_buf.readInt32(sb, STRING_BLOCK_LENGTH_INDEX);
+		return m_buf.getString(sb, STRING_BLOCK_DATA_START_INDEX, len);
+	}
+	/**
+	 * adds a string given the index and offset of the string placeholder in the message
+	 * the placeholder consists of the following:
+	 * - uint16 index - the index of the string block
+	 * - uint16 unused
+	 * the string block consists f the following:
+	 * - uint32 length - the number of characters of the string
+	 * - uint8... the characters of the string
+	 * This method also expands the buffer by the length of the string block
+	 * The string block will be placed at the end of the buffer
+	 * @param i - the index of the message
+	 * @param offset - the offset into the message of the string placeholder
+	 * @return the string
+	 */
+	protected void addString(FieldIndex i, int offset, String s) {
+		int n = s.length();
+		//determine the string block index
+		FieldIndex sb = m_buf.getNextIndex();
+		//first grow the buffer
+		m_buf.grow(STRING_BLOCK_DATA_START_INDEX + n, 4);
+		//then write the length
+		m_buf.writeInt32(sb, STRING_BLOCK_LENGTH_INDEX, n);
+		m_buf.putString(sb, STRING_BLOCK_DATA_START_INDEX, s);
+	}
+	/**
+	 * determine the index of a sequence element block, given the index of the sequence placeholder and the element index
+	 * the placeholder consists of the following fields:
+	 * - uint16 - the index to the start of the sequence block
+	 * - uint16 - the number of bytes per sequence element
+	 * @param i
+	 * @param offset
 	 * @return
 	 */
-	public abstract int getModuleMessageKey();
+	protected FieldIndex getSequenceElementBlock(FieldIndex i, int offset, int elementIndex) {
+		FieldIndex sb = FieldIndex.make(m_buf.readUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX));		int sbl = m_buf.readUint16(i,  offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
+		return FieldIndex.make(sb, sbl * elementIndex);
+		
+	}
+	
+	protected int getSequenceLength(FieldIndex i, int offset) {
+		FieldIndex sb = FieldIndex.make(m_buf.readUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX));
+		return m_buf.readInt32(sb, SEQUENCE_BLOCK_LENGTH_INDEX);
+	}
+	protected FieldIndex initSequenceBlock(FieldIndex i, int offset, int elementByteLength, int elementNum) {
+		//determine the sequence block index
+		FieldIndex sb = m_buf.getNextIndex();
+		//first grow the buffer
+		int bn = elementByteLength * elementNum;
+		m_buf.grow(SEQUENCE_BLOCK_DATA_START_INDEX + bn, 4);
+		m_buf.writeUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX, sb.getIndex());
+		m_buf.writeUint16(i, offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX, elementByteLength);
+		m_buf.writeUint32(sb, SEQUENCE_BLOCK_LENGTH_INDEX, elementNum);
+		return sb;
+	}
 	/**
-	 * This method should be added by the automatic schema parser and should not need to be hand-coded
-	 * This is defined here so that this class has access to the method.
-	 * Note that if the schema is edited such that it does not have this field then a compilation error will likely result
-	 * @param v
-	 */
-	public abstract void setModuleMessageKey(int v);
-	/**
-	 * gets the length of this message, measured in 4-byte words.
-	 * This method should be added by the automatic schema parser and should not need to be hand-coded
-	 * This is defined here so that this class has access to the method.
-	 * Note that if the schema is edited such that it does not have this field then a compilation error will likely result
-	 * @return the length
-	 */
-	public abstract int getLength();
-	/**
-	 * Sets the length of this message, measured in 4-byte words
-	 * This method should be added by the automatic schema parser and should not need to be hand-coded
-	 * This is defined here so that this class has access to the method.
-	 * Note that if the schema is edited such that it does not have this field then a compilation error will likely result
-	 * @param v - the value 
-	 */
-	public abstract void setLength(int v);
-	/**
-	 * compute the maximum number of top-level fields in this message, as defined by the IDL schema.
-	 * This is useful to determine which fields might be present in this message
-	 * For instance, if the max ordinal is zero, then there are no fields populated in this message
- 	 * This method should be added by the automatic schema parser and should not need to be hand-coded
- 	 * This is defined here so that this class has access to the method.
- 	 * Note that if the schema is edited such that it does not have this field then a compilation error will likely result
+	 * determines the field index of an array element, given the index and offset of the array
+	 * @param i - the index of the block containing the array 
+	 * @param offset - the offset into the block of the array
+	 * @param elementIndex - the index of the desired element of the array
+	 * @param elementByteLength - the number of bytes per element of the array
 	 * @return
 	 */
-	public abstract int getMaxOrdinal();
-	/**
-	 * updates the max ordinal field of this message with the specified value
-	 * This indicate the highest ordinal field contained in this message
-	 * All lower ordinal fields are assumed to be present
-	 * This is only used during message construction and will e based on the current version of the IDL schema
-	 * A value of zero means there are no fields populated
-	 * This method should be added by the automatic schema parser and should not need to be hand-coded
-	 * This is defined here so that this class has access to the method.
-	 * Note that if the schema is edited such that it does not have this field then a compilation error will likely result
-	 * @param v - the value to set the ordinal too.
-	 */
-	public abstract void setMaxOrdinal(int v);
+	protected FieldIndex getArrayElementBlock(FieldIndex i, int offset, int elementIndex, int elementByteLength) {
+		return FieldIndex.make(i, offset + (elementByteLength * elementIndex));
+	}
 
 }
