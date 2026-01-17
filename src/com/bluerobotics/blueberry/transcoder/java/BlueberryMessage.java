@@ -57,7 +57,7 @@ public abstract class BlueberryMessage {
 	 * @return
 	 */
 	public static int getByteLength(BlueberryBuffer buf) {
-		int i = buf.readShort(FieldIndex.ZERO, SIZE_INDEX);
+		int i = buf.readUint16(FieldIndex.ZERO, SIZE_INDEX);
 		return i * 4;
 	}
 	/**
@@ -67,7 +67,7 @@ public abstract class BlueberryMessage {
 	 * @return
 	 */
 	public static int getModuleMessageKey(BlueberryBuffer buf) {
-		return buf.readInt(FieldIndex.ZERO, MODULE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
+		return buf.readInt32(FieldIndex.ZERO, MODULE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
 	}
 
 	/**

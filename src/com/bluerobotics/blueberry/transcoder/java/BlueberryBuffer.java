@@ -77,44 +77,50 @@ public class BlueberryBuffer {
 		m_buf.put(b);
 		return m_buf.position();
 	}
-	public void writeFloat(FieldIndex i, int byteOffset, double v){
+	public void writeFloat32(FieldIndex i, int byteOffset, double v){
 		m_buf.putFloat(i.getIndex() + byteOffset + m_byteOffset, (float)v);
 	}
 	
-	public void writeUnsignedShort(FieldIndex i, int byteOffset, int v) {
+	public void writeUint16(FieldIndex i, int byteOffset, int v) {
 		m_buf.putShort(i.getIndex() + byteOffset + m_byteOffset, (short)(v & 0xffff));
 	}
-	public void writeUnsignedByte(FieldIndex i, int byteOffset, int v) {
+	public void writeUint8(FieldIndex i, int byteOffset, int v) {
 		m_buf.put(i.getIndex() + byteOffset + m_byteOffset, (byte)(v & 0xff));
 	}
-	public void writeInt(FieldIndex i, int byteOffset, int v) {
+	public void writeInt32(FieldIndex i, int byteOffset, int v) {
 		m_buf.putInt(i.getIndex() + byteOffset + m_byteOffset,  v);
 	}
-	public void writeByte(FieldIndex i, int byteOffset, int v) {
+	public void writeInt8(FieldIndex i, int byteOffset, int v) {
 		m_buf.put(i.getIndex() + byteOffset + m_byteOffset, (byte)v);
 	}
-	public void writeShort(FieldIndex i, int byteOffset, int v) {
+	public void writeInt16(FieldIndex i, int byteOffset, int v) {
 		m_buf.putShort(i.getIndex() + byteOffset + m_byteOffset, (short)v);
 	}
-	public double readFloat(FieldIndex i, int byteOffset) {
+	public double readFloat32(FieldIndex i, int byteOffset) {
 		return m_buf.getFloat(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public int readInt(FieldIndex i, int byteOffset) {
+	public int readInt32(FieldIndex i, int byteOffset) {
 		return m_buf.getInt(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public long readLong(FieldIndex i, int byteOffset) {
+	public long readUint32(FieldIndex i, int byteOffset) {
+		return (long)m_buf.getInt(i.getIndex() + byteOffset + m_byteOffset);
+	}
+	public long readInt64(FieldIndex i, int byteOffset) {
 		return m_buf.getLong(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public void writeLong(FieldIndex i, int byteOffset, long v) {
+	public void writeInt64(FieldIndex i, int byteOffset, long v) {
 		m_buf.putLong(i.getIndex() + byteOffset + m_byteOffset, v);
 	}
-	public double readDouble(FieldIndex i, int byteOffset) {
+	public void writeUint32(FieldIndex i, int byteOffset, long v) {
+		m_buf.putInt(i.getIndex() + byteOffset + m_byteOffset, (int)v);
+	}
+	public double readFloat64(FieldIndex i, int byteOffset) {
 		return m_buf.getDouble(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public void writeDouble(FieldIndex i, int byteOffset, double v) {
+	public void writeFloat64(FieldIndex i, int byteOffset, double v) {
 		m_buf.putDouble(i.getIndex() + byteOffset + m_byteOffset, v);
 	}
-	public int readByte(FieldIndex i, int byteOffset) {
+	public int readInt8(FieldIndex i, int byteOffset) {
 		return m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
 	}
 	
@@ -132,7 +138,7 @@ public class BlueberryBuffer {
 		m_buf.putInt(j, n);
 		m_buf.put(j+4, bs, 0, n);
 	}
-	public int readUnsignedShort(FieldIndex i, int byteOffset) {
+	public int readUint16(FieldIndex i, int byteOffset) {
 		int result = m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
 		if(result < 0) {
 			result += 65536;
@@ -140,33 +146,33 @@ public class BlueberryBuffer {
 		return result;
 		
 	}
-	public int readUnsignedByte(FieldIndex i, int byteOffset) {
+	public int readUint8(FieldIndex i, int byteOffset) {
 		int result = (int) m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
 		if(result < 0) {
 			result += 256;
 		}
 		return result;
 	}
-	public int readShort(FieldIndex i, int byteOffset) {
+	public int readInt16(FieldIndex i, int byteOffset) {
 		return m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public void writeBool(BitIndex i, int byteOffset, boolean v) {
+	public void writeBit(BitIndex i, int byteOffset, boolean v) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i, byteOffset);
+		int bv = readUint8(i, byteOffset);
 		if(v) {
 			bv |= 1<<i.getBitIndex();
 		} else {
 			bv &= ~(1<<i.getBitIndex());
 		}
-		writeByte(i, byteOffset, bv);
+		writeUint8(i, byteOffset, bv);
 	}
 	public boolean readBool(BitIndex i, int byteOffset) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readByte(i, byteOffset) & (1<<i.getBitIndex());
+		int bv = readUint8(i, byteOffset) & (1<<i.getBitIndex());
 		return bv != 0;
 	}
 	/**

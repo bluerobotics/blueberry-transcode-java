@@ -28,7 +28,7 @@ public class BlueberryMessageParser {
 		BlueberryBuffer buf = p.getDataBuffer();
 		
 		while(!buf.isEmpty()) {
-			int key = buf.readInt(FieldIndex.ZERO, 0);
+			int key = buf.readInt32(FieldIndex.ZERO, 0);
 			
 			buf = buf.getNextBuffer(4);//skip past the transport header now that we have the key
 			
