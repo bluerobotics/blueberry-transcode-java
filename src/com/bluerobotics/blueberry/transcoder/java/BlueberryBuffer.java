@@ -168,7 +168,7 @@ public class BlueberryBuffer {
 		}
 		writeUint8(i, byteOffset, bv);
 	}
-	public boolean readBool(BitIndex i, int byteOffset) {
+	public boolean readBit(BitIndex i, int byteOffset) {
 		if(i.getBitIndex() > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
