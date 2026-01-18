@@ -234,7 +234,7 @@ public class BlueberryPacket {
 			if(msg == null) {
 				j = DATA_INDEX;
 			} else {
-				j = i + 4 + msg.getLength();//the 4 is to jump past the module/message key
+				j = i + 4 + msg.getByteLength();//the 4 is to jump past the module/message key
 			}
 			return j < p.getPublishedWordLength()*4;
 		}
@@ -246,7 +246,7 @@ public class BlueberryPacket {
 			if(msg == null) {
 				i = DATA_INDEX;
 			} else {
-				i += 4 + msg.getLength();//the 4 is to jump past the module/message key
+				i += 4 + msg.getByteLength();//the 4 is to jump past the module/message key
 			}
 			int key = m_buf.readInt32(FieldIndex.ZERO, i);
 			

@@ -39,6 +39,9 @@ public abstract class BlueberryMessage {
 	protected static final int MODULE_MESSAGE_KEY_INDEX = 0;
 	protected static final int SIZE_INDEX = 4;
 	protected static final int MAX_ORD_INDEX = 6;
+	protected static final int MIN_MAX_ORDINAL = 2;//this is the max ordinal if no fields are populated
+	protected static final int MIN_MESSAGE_LENGTH = 8;//this is the length of a message if no fields are populated
+	protected static final int INVALID_BLOCK = 0xffff;
 	protected static final int FIRST_MESSAGE_INDEX = 8;
 	protected static final int STRING_BLOCK_LENGTH_INDEX = 0;
 	protected static final int STRING_BLOCK_DATA_START_INDEX = 4;
@@ -59,21 +62,22 @@ public abstract class BlueberryMessage {
 		m_buf = b;
 	}
 	/**
-	 * starts a new message in the specified buffer with the intention of building it for transmission
+	 * writes the header for this message with the intention of building it for transmission
 	 * The buffer must have zero length initially. It will be grown as data is added.
 	 * Upon completion of this method, the message length will only include the header information
 	 * @param b
 	 * @param key - the module/message key to include in the message header
 	 * @param maxOrdinal - the maximum ordinal value of all the fields to be populated
+	 * @param byteLength - the length that this message should be
 	 */
-	public BlueberryMessage(BlueberryBuffer b, int key, int maxOrdinal) {
-		if(b.getLength() > 0) {
+	protected void setupHeader(int key, int maxOrdinal, int byteLength) {
+		if(m_buf.getLength() > 0) {
 			throw new RuntimeException("A buffer must be empty prior to constructing a new message.");
 		}
-		m_buf = b;
-		b.grow(FIRST_MESSAGE_INDEX, 4);
-		b.writeInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX, key);
-		b.writeInt16(FieldIndex.ZERO, MAX_ORD_INDEX, maxOrdinal);
+
+		updateByteLength(8);
+		m_buf.writeInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX, key);
+		m_buf.writeInt16(FieldIndex.ZERO, MAX_ORD_INDEX, maxOrdinal);
 	}
 	
 
@@ -91,14 +95,15 @@ public abstract class BlueberryMessage {
 	protected int getByteLength() {
 		return m_buf.readUint16(FieldIndex.ZERO, SIZE_INDEX) * 4;
 	}
-	protected void updateByteLength() {
-		m_buf.align(4);
+	protected BlueberryBuffer getNextMessageBuffer() {
+		return m_buf.getNextBuffer(getByteLength());
+	}
+	private void updateByteLength(int n) {
+		m_buf.grow(n, 4);
 		int len = m_buf.getLength()/4;
 		m_buf.writeUint16(FieldIndex.ZERO, SIZE_INDEX, len);
 	}
-	protected void setMaxOrdinal(int i) {
-		m_buf.writeUint8(FieldIndex.ZERO, MAX_ORD_INDEX, i);
-	}
+
 	protected int getMaxOrdinal() {
 		return m_buf.readUint8(FieldIndex.ZERO, MAX_ORD_INDEX);
 	}
@@ -153,7 +158,7 @@ public abstract class BlueberryMessage {
 		//determine the string block index
 		FieldIndex sb = m_buf.getNextIndex();
 		//first grow the buffer
-		m_buf.grow(STRING_BLOCK_DATA_START_INDEX + n, 4);
+		updateByteLength(STRING_BLOCK_DATA_START_INDEX + n);
 		//then write the length
 		m_buf.writeInt32(sb, STRING_BLOCK_LENGTH_INDEX, n);
 		m_buf.putString(sb, STRING_BLOCK_DATA_START_INDEX, s);
@@ -182,7 +187,7 @@ public abstract class BlueberryMessage {
 		FieldIndex sb = m_buf.getNextIndex();
 		//first grow the buffer
 		int bn = elementByteLength * elementNum;
-		m_buf.grow(SEQUENCE_BLOCK_DATA_START_INDEX + bn, 4);
+		updateByteLength(SEQUENCE_BLOCK_DATA_START_INDEX + bn);
 		m_buf.writeUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX, sb.getIndex());
 		m_buf.writeUint16(i, offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX, elementByteLength);
 		m_buf.writeUint32(sb, SEQUENCE_BLOCK_LENGTH_INDEX, elementNum);
@@ -199,5 +204,6 @@ public abstract class BlueberryMessage {
 	protected FieldIndex getArrayElementBlock(FieldIndex i, int offset, int elementIndex, int elementByteLength) {
 		return FieldIndex.make(i, offset + (elementByteLength * elementIndex));
 	}
+	
 
 }
