@@ -26,6 +26,7 @@ package com.bluerobotics.blueberry.transcoder.java;
  */
 public interface FieldIndex {
 	public static final FieldIndex ZERO = (() -> 0);
+	public static final FieldIndex INVALID = (() -> -1);
 	int getIndex();
 	public static FieldIndex make(int i) {
 		return () -> {
@@ -33,6 +34,9 @@ public interface FieldIndex {
 		};
 	}
 	public static FieldIndex make(FieldIndex i, int offset) {
+		if(i == INVALID) {
+			return INVALID;
+		}
 		return () -> {
 			return i.getIndex() + offset;
 		};

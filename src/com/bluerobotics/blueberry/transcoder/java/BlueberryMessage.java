@@ -61,6 +61,11 @@ public abstract class BlueberryMessage {
 	public BlueberryMessage(BlueberryBuffer b) {
 		m_buf = b;
 	}
+	
+	public abstract boolean isFull();
+	public boolean isEmpty() {
+		return getMaxOrdinal() <= MIN_MAX_ORDINAL;
+	}
 	/**
 	 * writes the header for this message with the intention of building it for transmission
 	 * The buffer must have zero length initially. It will be grown as data is added.
@@ -173,8 +178,15 @@ public abstract class BlueberryMessage {
 	 * @return
 	 */
 	protected FieldIndex getSequenceElementBlock(FieldIndex i, int offset, int elementIndex) {
-		FieldIndex sb = FieldIndex.make(m_buf.readUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX));		int sbl = m_buf.readUint16(i,  offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
-		return FieldIndex.make(sb, sbl * elementIndex);
+		if(i == FieldIndex.INVALID) {
+			return FieldIndex.INVALID;
+		}
+		int j = m_buf.readUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX);
+		if(j == INVALID_BLOCK) {
+			return FieldIndex.INVALID;
+		}
+		int sbl = m_buf.readUint16(i,  offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
+		return FieldIndex.make(j + sbl * elementIndex);
 		
 	}
 	
