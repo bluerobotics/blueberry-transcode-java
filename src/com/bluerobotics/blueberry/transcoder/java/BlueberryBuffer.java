@@ -197,25 +197,25 @@ public class BlueberryBuffer {
 		checkIndex(i, byteOffset, 2);
 		return m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
 	}
-	public void writeBit(BitIndex i, int byteOffset, boolean v) {
+	public void writeBit(FieldIndex i, int byteOffset, int bitNumber, boolean v) {
 		checkIndex(i, byteOffset, 1);
-		if(i.getBitIndex() > 7) {
+		if(bitNumber > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
 		int bv = readUint8(i, byteOffset);
 		if(v) {
-			bv |= 1<<i.getBitIndex();
+			bv |= 1<<bitNumber;
 		} else {
-			bv &= ~(1<<i.getBitIndex());
+			bv &= ~(1<<bitNumber);
 		}
 		writeUint8(i, byteOffset, bv);
 	}
-	public boolean readBit(BitIndex i, int byteOffset) {
+	public boolean readBit(FieldIndex i, int byteOffset, int bitNumber) {
 		checkIndex(i, byteOffset, 1);
-		if(i.getBitIndex() > 7) {
+		if(bitNumber > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readUint8(i, byteOffset) & (1<<i.getBitIndex());
+		int bv = readUint8(i, byteOffset) & (1<<bitNumber);
 		return bv != 0;
 	}
 //	/**
