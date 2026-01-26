@@ -41,7 +41,7 @@ public abstract class BlueberryPacketBuilder {
 	 * If not, then the current block will never be non-null and exceptions will occur
 	 */
 	public void reset() {
-		m_packet = new BlueberryPacket(m_maxByteCount);
+		m_packet = BlueberryPacket.makeForTransmit(m_maxByteCount);
 		
 	
 		

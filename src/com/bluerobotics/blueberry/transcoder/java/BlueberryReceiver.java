@@ -23,7 +23,7 @@ public class BlueberryReceiver {
 		
 	});
 	private static final int BUFF_MAX_SIZE = 10000;
-	private BlueberryPacket m_packet = new BlueberryPacket(BUFF_MAX_SIZE);
+	private BlueberryPacket m_packet = BlueberryPacket.makeForReceive(BUFF_MAX_SIZE);
 	private long lastByteTime = 0;
 	private long maxByteTime = 0;
 	private boolean m_checkCrc = true;
@@ -99,7 +99,7 @@ public class BlueberryReceiver {
 	}
 	
 	public void reset() {
-		m_packet = new BlueberryPacket(BUFF_MAX_SIZE);
+		m_packet = BlueberryPacket.makeForReceive(BUFF_MAX_SIZE);
 	}
 	
 	/**

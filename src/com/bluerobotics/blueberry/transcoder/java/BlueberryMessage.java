@@ -220,10 +220,5 @@ public abstract class BlueberryMessage {
 		return FieldIndex.make(i, offset + (elementByteLength * elementIndex));
 	}
 	
-	protected static boolean isModuleMessageKeyCorrect(BlueberryBuffer buf, int key) {
-		int k = buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX);
-		return key == k;
-	}
 	
-
 }

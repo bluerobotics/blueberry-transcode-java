@@ -50,16 +50,40 @@ public class BlueberryPacket {
 	private static final int LENGTH_INDEX = 4;
 	private static final int CRC_INDEX = 6;
 	private static final int DATA_INDEX = 8;
-	private static final byte[] START_WORD_BYTES = {0x42, 0x6c, 0x75, 0x65};
+//	private static final byte[] START_WORD_BYTES = {0x42, 0x6c, 0x75, 0x65};
 	private static final int START_WORD_VAL = 0x65756c42; //little endian means the lowest index byte (first received byte) is the least significant byte
 	
+
+	
+	protected BlueberryPacket(ByteBuffer bb) {
+		m_buf = new BlueberryBuffer(bb.order(ByteOrder.LITTLE_ENDIAN));
+		m_receiveTime = Instant.now();
+
+		
+	}
 	/**
-	 * creates a new packet, ready for receiving into or buiding prior to transmission
+	 * creates a new packet, ready for building into prior to transmission
 	 * @param bufferSize
 	 */
-	public BlueberryPacket(int bufferSize) {
-		m_buf = new BlueberryBuffer(ByteBuffer.wrap(new byte[bufferSize]).order(ByteOrder.LITTLE_ENDIAN));
-		m_receiveTime = Instant.now();
+	public static BlueberryPacket makeForTransmit(int bufferSize) {
+		BlueberryPacket result = new BlueberryPacket(ByteBuffer.wrap(new byte[bufferSize]));
+		return result;
+	}
+	/**
+	 * creates a new packet, ready for building into prior to transmission
+	 * @param bufferSize
+	 */
+	public static BlueberryPacket makeForReceive(int bufferSize) {
+		BlueberryPacket result = new BlueberryPacket(ByteBuffer.wrap(new byte[bufferSize]));
+		result.setupStartWord();
+		return result;
+	}
+	/**
+	 * creates a new packet for parsing, wrapping around an existing byte buffer
+	 * @param bb - the buffer with the received data in
+	 */
+	public static BlueberryPacket makeForReceive(ByteBuffer bb) {
+		return new BlueberryPacket(bb);
 	}
 	
 	private int getPublishedWordLength() {
@@ -124,6 +148,9 @@ public class BlueberryPacket {
 		
 		
 	}
+	protected void setupStartWord() {
+		m_buf.writeInt32(FieldIndex.ZERO, START_WORD_INDEX, START_WORD_VAL);
+	}
 	public int computeCrc() {
 		int result = -1;
 		
@@ -153,6 +180,7 @@ public class BlueberryPacket {
 	/**
 	 * if this packet is not complete then this method: appends zero-value bytes if necessary, updates the length field, computes the CRC, completes the buffer. 
 	 * zero-value bytes are appended if the length is not a multiple of 4-bytes
+	 * This must be called before transmitting a packet
 	 */
 	public void complete() {
 		if(!isComplete()) {
@@ -256,7 +284,10 @@ public class BlueberryPacket {
 		
 		
 	}
-	
+	/**
+	 * gets a buffer aligned to the start of the data segment of the packet
+	 * @return
+	 */
 	public BlueberryBuffer getDataBuffer() {
 		return m_buf.getNextBuffer(DATA_INDEX);
 	}
