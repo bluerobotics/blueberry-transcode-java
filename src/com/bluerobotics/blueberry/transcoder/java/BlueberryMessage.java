@@ -121,6 +121,9 @@ public abstract class BlueberryMessage {
 	protected static int getModuleMessageKey(BlueberryBuffer buf) {
 		return buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
 	}
+	protected static boolean isModuleMessageKeyCorrect(BlueberryBuffer buf, int key) {
+		return buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX) == key;//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
+	}
 
 	
 
