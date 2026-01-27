@@ -74,7 +74,8 @@ public class BlueberryReceiver {
 		int i;
 		
 		try {
-			i = m_packet.put(b);
+			
+			i = m_packet.putNewByte(b);
 			
 		} catch (BufferOverflowException e) {
 			reset();

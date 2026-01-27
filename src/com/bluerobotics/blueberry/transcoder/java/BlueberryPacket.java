@@ -75,7 +75,7 @@ public class BlueberryPacket {
 	 */
 	public static BlueberryPacket makeForReceive(int bufferSize) {
 		BlueberryPacket result = new BlueberryPacket(ByteBuffer.wrap(new byte[bufferSize]));
-		result.setupStartWord();
+		result.setupHeader();
 		return result;
 	}
 	/**
@@ -148,7 +148,8 @@ public class BlueberryPacket {
 		
 		
 	}
-	protected void setupStartWord() {
+	protected void setupHeader() {
+		m_buf.grow(DATA_INDEX, 0);
 		m_buf.writeInt32(FieldIndex.ZERO, START_WORD_INDEX, START_WORD_VAL);
 	}
 	public int computeCrc() {
@@ -166,14 +167,14 @@ public class BlueberryPacket {
 		
 		return result;
 	}
-	/**
-	 * puts the specified byte into the buffer
-	 * @param b - the byte to add
-	 * @return - the number of bytes in the buffer
-	 */
-	public int put(byte b) {
-		return m_buf.put(b);
-	}
+//	/**
+//	 * puts the specified byte into the buffer
+//	 * @param b - the byte to add
+//	 * @return - the number of bytes in the buffer
+//	 */
+//	public int put(byte b) {
+//		return m_buf.put(b);
+//	}
 	public boolean isComplete() {
 		return m_buf.isComplete();
 	}
@@ -187,8 +188,9 @@ public class BlueberryPacket {
 			//append zero-value bytes as necessary
 			int n = getByteLength();
 			int m = n % 4;
+			m_buf.grow(m, 4);
 			for(int i = 0; i < m; ++i) {
-				m_buf.put((byte)0);
+				m_buf.writeUint8(FieldIndex.ZERO, n + i, 0);
 			}
 			
 			//update the length field
@@ -290,6 +292,13 @@ public class BlueberryPacket {
 	 */
 	public BlueberryBuffer getDataBuffer() {
 		return m_buf.getNextBuffer(DATA_INDEX);
+	}
+	public BlueberryBuffer getNextMessageBuffer() {
+		
+		return m_buf.getNextBuffer();
+	}
+	public int putNewByte(byte b) {
+		return m_buf.putNewByte(b);
 	}
 	
 

@@ -98,7 +98,7 @@ public abstract class BlueberryMessage {
 		return i * 4;
 	}
 	protected int getByteLength() {
-		return m_buf.readUint16(FieldIndex.ZERO, SIZE_INDEX) * 4;
+		return getByteLength(m_buf);
 	}
 	protected BlueberryBuffer getNextMessageBuffer() {
 		return m_buf.getNextBuffer(getByteLength());

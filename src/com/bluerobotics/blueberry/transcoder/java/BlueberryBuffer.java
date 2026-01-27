@@ -78,15 +78,7 @@ public class BlueberryBuffer {
 		return m_byteOffset > m_buf.limit();
 	}
 	
-	/**
-	 * puts the specified byte into the buffer
-	 * @param b - the byte to add
-	 * @return - the number of bytes in the buffer
-	 */
-	public int put(byte b) {
-		m_buf.put(b);
-		return m_buf.position();
-	}
+	
 	public void writeFloat32(FieldIndex i, int byteOffset, double v){
 		checkIndex(i, byteOffset, 4);
 		m_buf.putFloat(i.getIndex() + byteOffset + m_byteOffset, (float)v);
@@ -266,22 +258,24 @@ public class BlueberryBuffer {
 	public int getLength() {
 		return m_length;
 	}
-	public void setLength(int len) {
-		m_length = len;
-	}
+//	public void setLength(int len) {
+//		m_length = len;
+//	}
 	public void align(int alignment) {
 		grow(getLength(), alignment);
 	}
 	/**
 	 * increase the length of this buffer by a number of bytes
 	 * @param len - the length in bytes to grow by
-	 * @param alginment - the byte alignment to round up by
+	 * @param alginment - the byte alignment to round up by. Only has an effect when greater than zero
 	 */
 	public void grow(int len, int alignment) {
 		int n = len;
-		int mod = len % alignment;
-		if(mod > 0) {
-			n += (alignment - mod);
+		if(alignment > 0) {
+			int mod = len % alignment;
+			if(mod > 0) {
+				n += (alignment - mod);
+			}
 		}
 		m_length += n;
 	}
@@ -296,7 +290,23 @@ public class BlueberryBuffer {
 			throw new RuntimeException("Index is beyond the current length of this buffer.");
 		}
 	}
-	
-	
-	
+	/**
+	 * adds a new byte to the end of the buffer
+	 * this is intended for use when receiving bytes one at a time
+	 * @param b
+	 * @return
+	 */
+	public int putNewByte(byte b) {
+		int i = m_length;
+		++m_length;
+		 m_buf.put(i, b);
+		return m_length;
+	}
+	/**
+	 * makes a buffer that starts where this one ends
+	 * @return
+	 */
+	public BlueberryBuffer getNextBuffer() {
+		return getNextBuffer(m_length);
+	}
 }
