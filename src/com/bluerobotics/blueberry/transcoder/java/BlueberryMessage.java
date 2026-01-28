@@ -190,6 +190,7 @@ public abstract class BlueberryMessage {
 			return FieldIndex.INVALID;
 		}
 		int sbl = m_buf.readUint16(i,  offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
+		int n = m_buf.readUint32(j, SEQUENCE_BLOCK_LENGTH_INDEX);
 		return FieldIndex.make(j + sbl * elementIndex);
 		
 	}
