@@ -87,16 +87,16 @@ public class BlueberryPacket {
 	}
 	
 	private int getPublishedWordLength() {
-		return m_buf.readUint16(FieldIndex.ZERO, LENGTH_INDEX);
+		return m_buf.readUint16(LENGTH_INDEX);
 	}
 	private void setPublishedWordLength(int len) {
-		m_buf.writeUint16(FieldIndex.ZERO, LENGTH_INDEX, len);
+		m_buf.writeUint16(LENGTH_INDEX, len);
 	}
 	private int getPublishedCrc() {
-		return m_buf.readUint16(FieldIndex.ZERO, CRC_INDEX);
+		return m_buf.readUint16(CRC_INDEX);
 	}
 	private void setPublishedCrc(int crc) {
-		m_buf.writeUint16(FieldIndex.ZERO, CRC_INDEX, crc);
+		m_buf.writeUint16(CRC_INDEX, crc);
 	}
 	/**
 	 * computes the CRC of this packet and compares it to its published CRC
@@ -124,7 +124,7 @@ public class BlueberryPacket {
 	protected boolean checkStartWord() {
 		int i = m_buf.getLength();
 		//i represents the number of bytes received so far
-		int sw = m_buf.readInt32(FieldIndex.ZERO, START_WORD_INDEX);
+		int sw = m_buf.readInt32(START_WORD_INDEX);
 		sw ^= START_WORD_VAL;
 		//mask off bits we have not received yet. Note that this could be written shorter but a switch-case seemed more understandable
 		switch(i){
@@ -150,7 +150,7 @@ public class BlueberryPacket {
 	}
 	protected void setupHeader() {
 		m_buf.grow(DATA_INDEX, 0);
-		m_buf.writeInt32(FieldIndex.ZERO, START_WORD_INDEX, START_WORD_VAL);
+		m_buf.writeInt32(START_WORD_INDEX, START_WORD_VAL);
 	}
 	public int computeCrc() {
 		int result = -1;
@@ -159,7 +159,7 @@ public class BlueberryPacket {
 		Crc1021 crc = new Crc1021();
 
 		for(int i = DATA_INDEX; i < pl; ++i){
-			byte b = (byte)m_buf.readUint8(FieldIndex.ZERO, i);
+			byte b = (byte)m_buf.readUint8(i);
 			crc.addByte(b);
 		}
 			
@@ -191,7 +191,7 @@ public class BlueberryPacket {
 			int m = n % 4;
 			m_buf.grow(m, 4);
 			for(int i = 0; i < m; ++i) {
-				m_buf.writeUint8(FieldIndex.ZERO, n + i, 0);
+				m_buf.writeUint8(n + i, 0);
 			}
 			
 			//update the length field
@@ -231,7 +231,7 @@ public class BlueberryPacket {
 		boolean firstTime = true;
 		int pl = getWordLength()*4;
 		for(int i = 0; i < pl; ++i) {
-			byte b = (byte)m_buf.readUint8(FieldIndex.ZERO, i);
+			byte b = (byte)m_buf.readUint8(i);
 			if(!firstTime) {
 				s.append(",");
 			}
@@ -278,7 +278,7 @@ public class BlueberryPacket {
 			} else {
 				i += 4 + msg.getByteLength();//the 4 is to jump past the module/message key
 			}
-			int key = m_buf.readInt32(FieldIndex.ZERO, i);
+			int key = m_buf.readInt32(i);
 			
 			msg = lu.wrap(key, p.m_buf.getNextBuffer(i + 4));//the 4 here is also to look past the module/message key
 			return msg;

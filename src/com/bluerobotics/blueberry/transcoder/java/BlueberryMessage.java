@@ -81,8 +81,8 @@ public abstract class BlueberryMessage {
 		}
 
 		updateByteLength(byteLength);
-		m_buf.writeInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX, key);
-		m_buf.writeInt16(FieldIndex.ZERO, MAX_ORD_INDEX, maxOrdinal);
+		m_buf.writeInt32(MODULE_MESSAGE_KEY_INDEX, key);
+		m_buf.writeInt16(MAX_ORD_INDEX, maxOrdinal);
 	}
 	
 
@@ -94,7 +94,7 @@ public abstract class BlueberryMessage {
 	 * @return
 	 */
 	public static int getByteLength(BlueberryBuffer buf) {
-		int i = buf.readUint16(FieldIndex.ZERO, SIZE_INDEX);
+		int i = buf.readUint16(SIZE_INDEX);
 		return i * 4;
 	}
 	protected int getByteLength() {
@@ -106,11 +106,11 @@ public abstract class BlueberryMessage {
 	private void updateByteLength(int n) {
 		m_buf.grow(n, 4);
 		int len = m_buf.getLength()/4;
-		m_buf.writeUint16(FieldIndex.ZERO, SIZE_INDEX, len);
+		m_buf.writeUint16(SIZE_INDEX, len);
 	}
 
 	protected int getMaxOrdinal() {
-		return m_buf.readUint8(FieldIndex.ZERO, MAX_ORD_INDEX);
+		return m_buf.readUint8(MAX_ORD_INDEX);
 	}
 	/**
 	 * gets the module/message key from the specified buffer.
@@ -119,10 +119,10 @@ public abstract class BlueberryMessage {
 	 * @return
 	 */
 	protected static int getModuleMessageKey(BlueberryBuffer buf) {
-		return buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
+		return buf.readInt32(MODULE_MESSAGE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
 	}
 	protected static boolean isModuleMessageKeyCorrect(BlueberryBuffer buf, int key) {
-		int k = buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX);
+		int k = buf.readInt32(MODULE_MESSAGE_KEY_INDEX);
 		return k == key;//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
 	}
 
@@ -142,11 +142,11 @@ public abstract class BlueberryMessage {
 	 * @param offset - the offset into the message of the string placeholder
 	 * @return the string
 	 */
-	protected String getString(FieldIndex i, int offset) {
-		FieldIndex sb = FieldIndex.make(m_buf.readUint16(i, offset + STRING_PLACEHOLDER_BLOCK_INDEX));
+	protected String getString(int i) {
+		int j = m_buf.readUint16(i + STRING_PLACEHOLDER_BLOCK_INDEX);
 		
-		int len = m_buf.readInt32(sb, STRING_BLOCK_LENGTH_INDEX);
-		return m_buf.getString(sb, STRING_BLOCK_DATA_START_INDEX, len);
+		int len = m_buf.readInt32(j + STRING_BLOCK_LENGTH_INDEX);
+		return m_buf.getString(j + STRING_BLOCK_DATA_START_INDEX, len);
 	}
 	/**
 	 * adds a string given the index and offset of the string placeholder in the message
@@ -162,15 +162,15 @@ public abstract class BlueberryMessage {
 	 * @param offset - the offset into the message of the string placeholder
 	 * @return the string
 	 */
-	protected void addString(FieldIndex i, int offset, String s) {
+	protected void addString(int i, String s) {
 		int n = s.length();
 		//determine the string block index
-		FieldIndex sb = m_buf.getNextIndex();
+		int j = m_buf.getNextIndex();
 		//first grow the buffer
 		updateByteLength(STRING_BLOCK_DATA_START_INDEX + n);
 		//then write the length
-		m_buf.writeInt32(sb, STRING_BLOCK_LENGTH_INDEX, n);
-		m_buf.putString(sb, STRING_BLOCK_DATA_START_INDEX, s);
+		m_buf.writeInt32(j + STRING_BLOCK_LENGTH_INDEX, n);
+		m_buf.putString(j + STRING_BLOCK_DATA_START_INDEX, s);
 	}
 	/**
 	 * determine the index of a sequence element block, given the index of the sequence placeholder and the element index
@@ -181,34 +181,37 @@ public abstract class BlueberryMessage {
 	 * @param offset
 	 * @return
 	 */
-	protected FieldIndex getSequenceElementBlock(FieldIndex i, int offset, int elementIndex) {
-		if(i == FieldIndex.INVALID) {
-			return FieldIndex.INVALID;
+	protected int getSequenceElementBlock(int i, int elementIndex) {
+		if(i < 0) {
+			return BlueberryBuffer.INVALID_INDEX;
 		}
-		int j = m_buf.readUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX);
-		if(j == INVALID_BLOCK) {
-			return FieldIndex.INVALID;
+		int j = m_buf.readUint16(i + SEQUENCE_PLACEHOLDER_BLOCK_INDEX);
+		if(j < 0) {
+			return BlueberryBuffer.INVALID_INDEX;
 		}
-		int sbl = m_buf.readUint16(i,  offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
-		int n = m_buf.readUint32(j, SEQUENCE_BLOCK_LENGTH_INDEX);
-		return FieldIndex.make(j + sbl * elementIndex);
+		int sbl = m_buf.readUint16(j +  SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
+		int n = m_buf.readInt32(j + SEQUENCE_BLOCK_LENGTH_INDEX);
+		if(elementIndex >= n) {
+			return BlueberryBuffer.INVALID_INDEX;
+		}
+		return j + (sbl * elementIndex);
 		
 	}
 	
-	protected int getSequenceLength(FieldIndex i, int offset) {
-		FieldIndex sb = FieldIndex.make(m_buf.readUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX));
-		return m_buf.readInt32(sb, SEQUENCE_BLOCK_LENGTH_INDEX);
+	protected int getSequenceLength(int i) {
+		int j = m_buf.readUint16(i + SEQUENCE_PLACEHOLDER_BLOCK_INDEX);
+		return m_buf.readInt32(j + SEQUENCE_BLOCK_LENGTH_INDEX);
 	}
-	protected FieldIndex initSequenceBlock(FieldIndex i, int offset, int elementByteLength, int elementNum) {
+	protected int initSequenceBlock(int i, int elementByteLength, int elementNum) {
 		//determine the sequence block index
-		FieldIndex sb = m_buf.getNextIndex();
+		int j = m_buf.getNextIndex();
 		//first grow the buffer
 		int bn = elementByteLength * elementNum;
 		updateByteLength(SEQUENCE_BLOCK_DATA_START_INDEX + bn);
-		m_buf.writeUint16(i, offset + SEQUENCE_PLACEHOLDER_BLOCK_INDEX, sb.getIndex());
-		m_buf.writeUint16(i, offset + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX, elementByteLength);
-		m_buf.writeUint32(sb, SEQUENCE_BLOCK_LENGTH_INDEX, elementNum);
-		return sb;
+		m_buf.writeUint16(i + SEQUENCE_PLACEHOLDER_BLOCK_INDEX, j);
+		m_buf.writeUint16(i + SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX, elementByteLength);
+		m_buf.writeUint32(j + SEQUENCE_BLOCK_LENGTH_INDEX, elementNum);
+		return j;
 	}
 	/**
 	 * determines the field index of an array element, given the index and offset of the array
@@ -218,8 +221,8 @@ public abstract class BlueberryMessage {
 	 * @param elementByteLength - the number of bytes per element of the array
 	 * @return
 	 */
-	protected FieldIndex getArrayElementBlock(FieldIndex i, int offset, int elementIndex, int elementByteLength) {
-		return FieldIndex.make(i, offset + (elementByteLength * elementIndex));
+	protected int getArrayElementBlock(int i, int elementIndex, int elementByteLength) {
+		return i + (elementByteLength * elementIndex);
 	}
 	
 	

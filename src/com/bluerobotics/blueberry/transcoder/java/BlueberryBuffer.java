@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
  * 
  */
 public class BlueberryBuffer {
+	public static final int INVALID_INDEX = 0xffff;
 	private static final Charset CHAR_ENC = StandardCharsets.UTF_8;
 
 	private int m_byteOffset = 0;
@@ -74,8 +75,8 @@ public class BlueberryBuffer {
 	 * Before this can be used, the buffer should be grown
 	 * @return
 	 */
-	public FieldIndex getNextIndex() {
-		return FieldIndex.make(getLength());
+	public int getNextIndex() {
+		return m_lastIndex.i - m_byteOffset;
 	}
 	public int getCurrentIndex() {
 		int i = m_byteOffset;
@@ -87,66 +88,66 @@ public class BlueberryBuffer {
 	}
 	
 	
-	public void writeFloat32(FieldIndex i, int byteOffset, double v){
-		checkIndex(i, byteOffset, 4);
-		m_buf.putFloat(i.getIndex() + byteOffset + m_byteOffset, (float)v);
+	public void writeFloat32(int i, double v){
+		checkIndex(i, 4);
+		m_buf.putFloat(m_byteOffset, (float)v);
 	}
 	
-	public void writeUint16(FieldIndex i, int byteOffset, int v) {
-		checkIndex(i, byteOffset, 2);
-		m_buf.putShort(i.getIndex() + byteOffset + m_byteOffset, (short)(v));
+	public void writeUint16(int i, int v) {
+		checkIndex(i, 2);
+		m_buf.putShort(i+ m_byteOffset, (short)(v));
 	}
-	public void writeUint8(FieldIndex i, int byteOffset, int v) {
-		checkIndex(i, byteOffset, 1);
-		m_buf.put(i.getIndex() + byteOffset + m_byteOffset, (byte)v);
+	public void writeUint8(int i, int v) {
+		checkIndex(i, 1);
+		m_buf.put(i+ m_byteOffset, (byte)v);
 	}
-	public void writeInt32(FieldIndex i, int byteOffset, int v) {
-		checkIndex(i, byteOffset, 4);
-		m_buf.putInt(i.getIndex() + byteOffset + m_byteOffset,  v);
+	public void writeInt32(int i, int v) {
+		checkIndex(i, 4);
+		m_buf.putInt(i+ m_byteOffset,  v);
 	}
-	public void writeInt8(FieldIndex i, int byteOffset, int v) {
-		checkIndex(i, byteOffset, 1);
-		m_buf.put(i.getIndex() + byteOffset + m_byteOffset, (byte)v);
+	public void writeInt8(int i, int v) {
+		checkIndex(i, 1);
+		m_buf.put(i+ m_byteOffset, (byte)v);
 	}
-	public void writeInt16(FieldIndex i, int byteOffset, int v) {
-		checkIndex(i, byteOffset, 2);
-		m_buf.putShort(i.getIndex() + byteOffset + m_byteOffset, (short)v);
+	public void writeInt16(int i, int v) {
+		checkIndex(i, 2);
+		m_buf.putShort(i+ m_byteOffset, (short)v);
 	}
-	public double readFloat32(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 4);
-		return m_buf.getFloat(i.getIndex() + byteOffset + m_byteOffset);
+	public double readFloat32(int i) {
+		checkIndex(i, 4);
+		return m_buf.getFloat(i+ m_byteOffset);
 	}
-	public int readInt32(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 4);
-		return m_buf.getInt(i.getIndex() + byteOffset + m_byteOffset);
+	public int readInt32(int i) {
+		checkIndex(i, 4);
+		return m_buf.getInt(i+ m_byteOffset);
 	}
-	public long readUint32(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 4);
-		return (long)m_buf.getInt(i.getIndex() + byteOffset + m_byteOffset);
+	public long readUint32(int i) {
+		checkIndex(i, 4);
+		return (long)m_buf.getInt(i+ m_byteOffset);
 	}
-	public long readInt64(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 8);
-		return m_buf.getLong(i.getIndex() + byteOffset + m_byteOffset);
+	public long readInt64(int i) {
+		checkIndex(i, 8);
+		return m_buf.getLong(i+ m_byteOffset);
 	}
-	public void writeInt64(FieldIndex i, int byteOffset, long v) {
-		checkIndex(i, byteOffset, 8);
-		m_buf.putLong(i.getIndex() + byteOffset + m_byteOffset, v);
+	public void writeInt64(int i, long v) {
+		checkIndex(i, 8);
+		m_buf.putLong(i+ m_byteOffset, v);
 	}
-	public void writeUint32(FieldIndex i, int byteOffset, long v) {
-		checkIndex(i, byteOffset, 4);
-		m_buf.putInt(i.getIndex() + byteOffset + m_byteOffset, (int)v);
+	public void writeUint32(int i, long v) {
+		checkIndex(i, 4);
+		m_buf.putInt(i+ m_byteOffset, (int)v);
 	}
-	public double readFloat64(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 8);
-		return m_buf.getDouble(i.getIndex() + byteOffset + m_byteOffset);
+	public double readFloat64(int i) {
+		checkIndex(i, 8);
+		return m_buf.getDouble(i+ m_byteOffset);
 	}
-	public void writeFloat64(FieldIndex i, int byteOffset, double v) {
-		checkIndex(i, byteOffset, 8);
-		m_buf.putDouble(i.getIndex() + byteOffset + m_byteOffset, v);
+	public void writeFloat64(int i, double v) {
+		checkIndex(i, 8);
+		m_buf.putDouble(i+ m_byteOffset, v);
 	}
-	public int readInt8(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 1);
-		return m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
+	public int readInt8(int i) {
+		checkIndex(i, 1);
+		return m_buf.get(i+ m_byteOffset);
 	}
 	/**
 	 * reads a string from the specified location, of the specified length
@@ -155,9 +156,9 @@ public class BlueberryBuffer {
 	 * @param n - the length of the string
 	 * @return
 	 */
-	public String getString(FieldIndex i, int byteOffset, int n) {
-		checkIndex(i, byteOffset, n);
-		int j = i.getIndex() + byteOffset + m_byteOffset;
+	public String getString(int i, int n) {
+		checkIndex(i, n);
+		int j = i+ m_byteOffset;
 
 		return CHAR_ENC.decode(m_buf.slice(j+4,n)).toString();
 	}
@@ -167,55 +168,55 @@ public class BlueberryBuffer {
 	 * @param byteOffset
 	 * @param s
 	 */
-	public void putString(FieldIndex i, int byteOffset, String s) {
+	public void putString(int i, String s) {
 		int n = s.length();
-		checkIndex(i, byteOffset, n);
-		int j = i.getIndex() + byteOffset + m_byteOffset;
+		checkIndex(i, n);
+		int j = i+ m_byteOffset;
 		
 		ByteBuffer bs = CHAR_ENC.encode(s);
 		m_buf.putInt(j, n);
 		m_buf.put(j+4, bs, 0, n);
 	}
-	public int readUint16(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 2);
-		int result = m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
+	public int readUint16(int i) {
+		checkIndex(i, 2);
+		int result = m_buf.getShort(i+ m_byteOffset);
 		if(result < 0) {
 			result += 65536;
 		}
 		return result;
 		
 	}
-	public int readUint8(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 1);
-		int result = (int) m_buf.get(i.getIndex() + byteOffset + m_byteOffset);
+	public int readUint8(int i) {
+		checkIndex(i, 1);
+		int result = (int) m_buf.get(i+ m_byteOffset);
 		if(result < 0) {
 			result += 256;
 		}
 		return result;
 	}
-	public int readInt16(FieldIndex i, int byteOffset) {
-		checkIndex(i, byteOffset, 2);
-		return m_buf.getShort(i.getIndex() + byteOffset + m_byteOffset);
+	public int readInt16(int i) {
+		checkIndex(i, 2);
+		return m_buf.getShort(i+ m_byteOffset);
 	}
-	public void writeBit(FieldIndex i, int byteOffset, int bitNumber, boolean v) {
-		checkIndex(i, byteOffset, 1);
+	public void writeBit(int i, int bitNumber, boolean v) {
+		checkIndex(i, 1);
 		if(bitNumber > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readUint8(i, byteOffset);
+		int bv = readUint8(i);
 		if(v) {
 			bv |= 1<<bitNumber;
 		} else {
 			bv &= ~(1<<bitNumber);
 		}
-		writeUint8(i, byteOffset, bv);
+		writeUint8(i, bv);
 	}
-	public boolean readBit(FieldIndex i, int byteOffset, int bitNumber) {
-		checkIndex(i, byteOffset, 1);
+	public boolean readBit(int i, int bitNumber) {
+		checkIndex(i, 1);
 		if(bitNumber > 7) {
 			throw new RuntimeException("bit number cannot be greater than 7!");
 		}
-		int bv = readUint8(i, byteOffset) & (1<<bitNumber);
+		int bv = readUint8(i) & (1<<bitNumber);
 		return bv != 0;
 	}
 //	/**
@@ -294,9 +295,9 @@ public class BlueberryBuffer {
 	 * @param offset - the offset of the element within the block that we're interested in
 	 * @param byteNum - the number of bytes of the element that we're interested in
 	 */
-	protected void checkIndex(FieldIndex index, int offset, int byteNum) {
-		int i = index.getIndex() + offset + byteNum;
-		if(i > getLength()) {
+	protected void checkIndex(int i, int byteNum) {
+		int j = i + m_byteOffset;
+		if(j > m_lastIndex.i) {
 			throw new RuntimeException("Index is beyond the current length of this buffer.");
 		}
 	}
