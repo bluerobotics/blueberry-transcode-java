@@ -182,8 +182,9 @@ public class BlueberryPacket {
 	 * if this packet is not complete then this method: appends zero-value bytes if necessary, updates the length field, computes the CRC, completes the buffer. 
 	 * zero-value bytes are appended if the length is not a multiple of 4-bytes
 	 * This must be called before transmitting a packet
+	 * @param crc - true computes crc, false not
 	 */
-	public void complete() {
+	public void complete(boolean crc) {
 		if(!isComplete()) {
 			//append zero-value bytes as necessary
 			int n = getByteLength();
@@ -196,9 +197,8 @@ public class BlueberryPacket {
 			//update the length field
 			setPublishedWordLength(n / 4);
 			
-			//compute and set crc
-			int crc = computeCrc();
-			setPublishedCrc(crc);
+			//compute (if desired) and set crc
+			setPublishedCrc(crc ? computeCrc() : 0xffff);
 			
 			//complete the buffer
 			m_buf.complete();

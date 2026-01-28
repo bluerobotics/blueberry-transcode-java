@@ -83,14 +83,17 @@ public class BlueberryPacketBuilder {
 	 * There must be a builder registered against the specified key for this to have any effect
 	 * @param key
 	 */
-	public BlueberryPacket build(int... keys) {
+	public BlueberryPacket build(boolean crc, int... keys) {
+		reset();
+		m_packet.setupHeader();
 		for(int k : keys) {
 			BlueberryBuilder b = m_builders.get(k);
 			if(b != null) {
 				b.buildMessage(m_packet.getNextMessageBuffer());
 			}
 		}
-		return null;
+		m_packet.complete(crc);
+		return m_packet;
 	}
 	
 	

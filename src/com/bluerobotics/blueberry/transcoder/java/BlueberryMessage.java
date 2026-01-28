@@ -80,7 +80,7 @@ public abstract class BlueberryMessage {
 			throw new RuntimeException("A buffer must be empty prior to constructing a new message.");
 		}
 
-		updateByteLength(8);
+		updateByteLength(byteLength);
 		m_buf.writeInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX, key);
 		m_buf.writeInt16(FieldIndex.ZERO, MAX_ORD_INDEX, maxOrdinal);
 	}
@@ -122,7 +122,8 @@ public abstract class BlueberryMessage {
 		return buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX);//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
 	}
 	protected static boolean isModuleMessageKeyCorrect(BlueberryBuffer buf, int key) {
-		return buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX) == key;//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
+		int k = buf.readInt32(FieldIndex.ZERO, MODULE_MESSAGE_KEY_INDEX);
+		return k == key;//this will ready 4-bytes formatted as a 32-bit int, with the LSb at the specified index
 	}
 
 	

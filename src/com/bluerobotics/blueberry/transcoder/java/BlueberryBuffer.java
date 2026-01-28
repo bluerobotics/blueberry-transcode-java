@@ -34,7 +34,14 @@ public class BlueberryBuffer {
 
 	private int m_byteOffset = 0;
 	private ByteBuffer m_buf;
-	private int m_length = 0;
+	/**
+	 * a simple class to contain the index of the last byte
+	 * This allows buffers derived from this one to share the same last index
+	 */
+	private class LastIndex {
+		int i;
+	}
+	private LastIndex m_lastIndex;//tracks the number of bytes used in the buffer
 	private static final ByteOrder BYTE_ORDER = ByteOrder.LITTLE_ENDIAN;
 
 	/**
@@ -46,7 +53,7 @@ public class BlueberryBuffer {
 		m_buf = bb;
 		m_byteOffset = 0;
 		m_buf.order(BYTE_ORDER);
-		m_length = bb.limit();//TODO: is this correct?
+		m_lastIndex = new LastIndex();
 	}
 	
 	/**
@@ -55,9 +62,10 @@ public class BlueberryBuffer {
 	 * @return - the new buffer that is offset from this one.
 	 */
 	public BlueberryBuffer getNextBuffer(int offset) {
-		int i = offset;
+		
 		BlueberryBuffer result = new BlueberryBuffer(m_buf);
-		result.m_byteOffset = m_byteOffset + i;
+		result.m_byteOffset = m_byteOffset + offset;
+		result.m_lastIndex = m_lastIndex;
 
 		return result;
 	}
@@ -245,7 +253,8 @@ public class BlueberryBuffer {
 	}
 	public void complete() {
 		if(!isComplete()) {
-			m_buf.flip();
+//			m_buf.flip();
+			m_buf.limit(getLength());
 			m_buf = m_buf.asReadOnlyBuffer();
 			m_buf.order(BYTE_ORDER);
 		}
@@ -256,7 +265,7 @@ public class BlueberryBuffer {
 	 * @return
 	 */
 	public int getLength() {
-		return m_length;
+		return m_lastIndex.i - m_byteOffset;
 	}
 //	public void setLength(int len) {
 //		m_length = len;
@@ -277,7 +286,7 @@ public class BlueberryBuffer {
 				n += (alignment - mod);
 			}
 		}
-		m_length += n;
+		m_lastIndex.i += n;
 	}
 	/**
 	 * checks to ensure the buffer is long enough
@@ -286,7 +295,8 @@ public class BlueberryBuffer {
 	 * @param byteNum - the number of bytes of the element that we're interested in
 	 */
 	protected void checkIndex(FieldIndex index, int offset, int byteNum) {
-		if((index.getIndex() + offset + byteNum) >= m_length) {
+		int i = index.getIndex() + offset + byteNum;
+		if(i > getLength()) {
 			throw new RuntimeException("Index is beyond the current length of this buffer.");
 		}
 	}
@@ -297,16 +307,16 @@ public class BlueberryBuffer {
 	 * @return
 	 */
 	public int putNewByte(byte b) {
-		int i = m_length;
-		++m_length;
+		int i = getLength();
+		grow(1,0);
 		 m_buf.put(i, b);
-		return m_length;
+		return getLength();
 	}
 	/**
 	 * makes a buffer that starts where this one ends
 	 * @return
 	 */
 	public BlueberryBuffer getNextBuffer() {
-		return getNextBuffer(m_length);
+		return getNextBuffer(getLength());
 	}
 }

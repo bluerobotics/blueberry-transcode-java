@@ -109,7 +109,6 @@ public class BlueberryReceiver {
 	 * @param bs
 	 */
 	protected void publish(BlueberryPacket p) {
-		p.complete();
 		EXECUTOR.submit(() -> m_processor.parse(p), "PacketReceiver.publish");
 		reset();
 

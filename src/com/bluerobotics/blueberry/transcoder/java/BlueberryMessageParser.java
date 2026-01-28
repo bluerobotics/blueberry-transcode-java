@@ -26,16 +26,15 @@ public class BlueberryMessageParser {
 	public void parse(BlueberryPacket p){
 		
 		BlueberryBuffer buf = p.getDataBuffer();
-		
+
 		while(!buf.isEmpty()) {
-			int key = buf.readInt32(FieldIndex.ZERO, 0);
-			
-			buf = buf.getNextBuffer(4);//skip past the transport header now that we have the key
-			
+			int key = BlueberryMessage.getModuleMessageKey(buf);
+			int len = BlueberryMessage.getByteLength(buf);
 			parse(key, buf);
-			int offset = 4 + BlueberryMessage.getByteLength(buf);//skip the sub-header and all the message data
-			buf = buf.getNextBuffer(offset);
+			buf = buf.getNextBuffer(len);
 		}
+		
+		
 		
 	}
 	
@@ -43,16 +42,12 @@ public class BlueberryMessageParser {
 	 * This registers a builder for a type of message, as well as a consumer and the unique module/method key that is used in the simple transport mechanism
 	 * It may seem odd to include the key for the Zenoh transport use-case. We'll see if we can address this later.
 	 * @param key - this is the module/message key that is used in the alternate simple transport mechanism
-	 * @param builder - a method to instantiate a message given a buffer
-	 * @param consumer - a method to consume a message after it has been instantiated
+	 * @param p - a method to parse a message from the buffer
 	 */
-	public void registerMessage(int key, Function<BlueberryBuffer, BlueberryMessage> factory, Consumer<BlueberryMessage> consumer) {
+	public void registerParser(int key, Consumer<BlueberryBuffer> p) {
 //		m_factories.put(key, factory);
 //		m_consumers.put(key, consumer);
-		m_processors.put(key, bb -> {
-			BlueberryMessage bm = factory.apply(bb);
-			consumer.accept(bm);
-		});
+		m_processors.put(key, p);
 	}
 	/**
 	 * parse the blueberry message contained in the specified buffer
