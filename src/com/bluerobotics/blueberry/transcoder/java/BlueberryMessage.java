@@ -170,6 +170,7 @@ public abstract class BlueberryMessage {
 		updateByteLength(STRING_BLOCK_DATA_START_INDEX + n);
 		//then write the length
 		m_buf.writeInt32(j + STRING_BLOCK_LENGTH_INDEX, n);
+		m_buf.writeInt16(i + STRING_PLACEHOLDER_BLOCK_INDEX, j);
 		m_buf.putString(j + STRING_BLOCK_DATA_START_INDEX, s);
 	}
 	/**
@@ -189,12 +190,12 @@ public abstract class BlueberryMessage {
 		if(j < 0) {
 			return BlueberryBuffer.INVALID_INDEX;
 		}
-		int sbl = m_buf.readUint16(j +  SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
+		int sbl = m_buf.readUint16(i +  SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX);
 		int n = m_buf.readInt32(j + SEQUENCE_BLOCK_LENGTH_INDEX);
 		if(elementIndex >= n) {
 			return BlueberryBuffer.INVALID_INDEX;
 		}
-		return j + (sbl * elementIndex);
+		return j + (sbl * elementIndex) + SEQUENCE_BLOCK_DATA_START_INDEX;
 		
 	}
 	
@@ -204,7 +205,7 @@ public abstract class BlueberryMessage {
 	}
 	protected int initSequenceBlock(int i, int elementByteLength, int elementNum) {
 		//determine the sequence block index
-		int j = m_buf.getNextIndex();
+		int j = m_buf.getLength();
 		//first grow the buffer
 		int bn = elementByteLength * elementNum;
 		updateByteLength(SEQUENCE_BLOCK_DATA_START_INDEX + bn);
