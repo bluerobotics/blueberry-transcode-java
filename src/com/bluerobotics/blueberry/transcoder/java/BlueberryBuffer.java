@@ -84,7 +84,7 @@ public class BlueberryBuffer {
 		return i;
 	}
 	public boolean isEmpty() {
-		return m_byteOffset > m_buf.limit();
+		return m_byteOffset >= m_buf.limit();
 	}
 	
 	
@@ -160,10 +160,11 @@ public class BlueberryBuffer {
 		checkIndex(i, n);
 		int j = i + m_byteOffset;
 
-		return CHAR_ENC.decode(m_buf.slice(j+4,n)).toString();
+		return CHAR_ENC.decode(m_buf.slice(j,n)).toString();
 	}
 	/**
 	 * writes a string to the buffer at the specified location
+	 * also writes the string length
 	 * @param i
 	 * @param byteOffset
 	 * @param s
@@ -174,8 +175,8 @@ public class BlueberryBuffer {
 		int j = i + m_byteOffset;
 		
 		ByteBuffer bs = CHAR_ENC.encode(s);
-		m_buf.putInt(j, n);
-		m_buf.put(j+4, bs, 0, n);
+		
+		m_buf.put(j, bs, 0, n);
 	}
 	public int readUint16(int i) {
 		checkIndex(i, 2);
@@ -319,5 +320,11 @@ public class BlueberryBuffer {
 	 */
 	public BlueberryBuffer getNextBuffer() {
 		return getNextBuffer(getLength());
+	}
+
+	public byte[] toArray() {
+		byte[] bs = new byte[getLength()];
+		m_buf.get(bs);
+		return bs;
 	}
 }

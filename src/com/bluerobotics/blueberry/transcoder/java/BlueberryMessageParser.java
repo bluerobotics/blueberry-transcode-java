@@ -11,7 +11,7 @@ import java.util.function.Function;
  * A class to keep track of messages, message parsers and module/message keys
  * This will likely eventually also deal with 
  */
-public class BlueberryMessageParser {
+public class BlueberryMessageParser implements Consumer<BlueberryPacket>{
 	
 	
 	
@@ -23,7 +23,9 @@ public class BlueberryMessageParser {
 	 * steps through all messages in a packet and applies the registered consumer
 	 * @param p - the packet to parse
 	 */
-	public void parse(BlueberryPacket p){
+	
+	@Override
+	public void accept(BlueberryPacket p) {
 		
 		BlueberryBuffer buf = p.getDataBuffer();
 
@@ -64,4 +66,6 @@ public class BlueberryMessageParser {
 			consumer.accept(buf);
 		}
 	}
+
+	
 }

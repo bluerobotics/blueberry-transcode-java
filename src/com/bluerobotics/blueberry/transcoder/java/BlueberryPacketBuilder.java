@@ -53,15 +53,7 @@ public class BlueberryPacketBuilder {
 	}
 	
 
-	/**
-	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
-	 * This method will be implemented by subclasses
-	 * It does not need to be called, it is called as part of the getPacket() method
-	 * @param omputeCrc - indicates whether the CRC should be computed for the paket header.
-	 */
-	protected void finish(boolean computeCrc) {
-		
-	}
+
 	
 	/**
 	 * get the packet that was just constructed
@@ -84,14 +76,29 @@ public class BlueberryPacketBuilder {
 	 * @param key
 	 */
 	public BlueberryPacket build(boolean crc, int... keys) {
+		start();
+		addTo(keys);
+		return finish(crc);
+	}
+	public void start() {
 		reset();
 		m_packet.setupHeader();
+	}
+	public void addTo(int... keys) {
 		for(int k : keys) {
 			BlueberryBuilder b = m_builders.get(k);
 			if(b != null) {
 				b.buildMessage(m_packet.getNextMessageBuffer());
 			}
 		}
+	}
+	/**
+	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
+	 * This method will be implemented by subclasses
+	 * It does not need to be called, it is called as part of the getPacket() method
+	 * @param omputeCrc - indicates whether the CRC should be computed for the paket header.
+	 */
+	public BlueberryPacket finish(boolean crc) {
 		m_packet.complete(crc);
 		return m_packet;
 	}

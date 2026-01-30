@@ -300,6 +300,10 @@ public class BlueberryPacket {
 	public int putNewByte(byte b) {
 		return m_buf.putNewByte(b);
 	}
+	public byte[] toArray() {
+		
+		return m_buf.toArray();
+	}
 	
 
 }

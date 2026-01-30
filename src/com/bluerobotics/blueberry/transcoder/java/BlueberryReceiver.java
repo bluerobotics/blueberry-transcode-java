@@ -7,6 +7,7 @@ import java.nio.BufferOverflowException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 
 /**
  * 
@@ -27,10 +28,10 @@ public class BlueberryReceiver {
 	private long lastByteTime = 0;
 	private long maxByteTime = 0;
 	private boolean m_checkCrc = true;
-	private final BlueberryMessageParser m_processor;
+	private final Consumer<BlueberryPacket> m_processor;
 	
 	
-	public BlueberryReceiver(BlueberryMessageParser processor) {
+	public BlueberryReceiver(Consumer<BlueberryPacket> processor) {
 		m_processor = processor;
 	}
 
@@ -109,7 +110,7 @@ public class BlueberryReceiver {
 	 * @param bs
 	 */
 	protected void publish(BlueberryPacket p) {
-		EXECUTOR.submit(() -> m_processor.parse(p), "PacketReceiver.publish");
+		EXECUTOR.submit(() -> m_processor.accept(p), "PacketReceiver.publish");
 		reset();
 
 	}
