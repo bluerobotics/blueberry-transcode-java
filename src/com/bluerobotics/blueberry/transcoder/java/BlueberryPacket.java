@@ -75,7 +75,6 @@ public class BlueberryPacket {
 	 */
 	public static BlueberryPacket makeForReceive(int bufferSize) {
 		BlueberryPacket result = new BlueberryPacket(ByteBuffer.wrap(new byte[bufferSize]));
-		result.setupHeader();
 		return result;
 	}
 	/**
@@ -112,8 +111,8 @@ public class BlueberryPacket {
 	 * @return
 	 */
 	protected boolean checkLength() {
-		int al = m_buf.getLength()/4;
-		return al >= DATA_INDEX && al >= getPublishedWordLength();
+		int n = m_buf.getLength();
+		return n >= DATA_INDEX && n >= (getPublishedWordLength()*4);
 	}
 	
 	/**

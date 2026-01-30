@@ -84,7 +84,7 @@ public class BlueberryBuffer {
 		return i;
 	}
 	public boolean isEmpty() {
-		return m_byteOffset >= m_buf.limit();
+		return m_byteOffset >= m_lastIndex.i;
 	}
 	
 	

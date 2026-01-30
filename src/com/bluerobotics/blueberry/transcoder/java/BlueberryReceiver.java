@@ -6,7 +6,9 @@ package com.bluerobotics.blueberry.transcoder.java;
 import java.nio.BufferOverflowException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -85,7 +87,7 @@ public class BlueberryReceiver {
 		
 		}
 	
-		if(m_packet.checkStartWord()) {
+		if(!m_packet.checkStartWord()) {
 			reset();
 		} else if(m_packet.checkLength()){
 			//check to see if we're done
@@ -110,12 +112,29 @@ public class BlueberryReceiver {
 	 * @param bs
 	 */
 	protected void publish(BlueberryPacket p) {
-		EXECUTOR.submit(() -> m_processor.accept(p), "PacketReceiver.publish");
-		reset();
+		EXECUTOR.submit(() -> {
+			m_processor.accept(p);	
+			reset();
 
+		}, "PacketReceiver.publish");
+	}
+	/**
+	 * a method for testing so the parser thread doesn't get killed before completion.
+	 * won't be used in normal operation
+	 */
+	public void waitTillDone() {
+		try {
+			EXECUTOR.shutdown();
+			EXECUTOR.awaitTermination(100, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
-	
+	public void setCheckCrc(boolean b) {
+		m_checkCrc = b;
+	}
 
 }
