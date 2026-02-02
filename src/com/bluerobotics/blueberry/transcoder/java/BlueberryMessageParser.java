@@ -35,7 +35,7 @@ public class BlueberryMessageParser implements Consumer<BlueberryPacket>{
 			parse(key, buf);
 			buf = buf.getNextBuffer(len);
 		}
-		System.out.println("BlueberryMessageParser.accept done!");
+//		System.out.println("BlueberryMessageParser.accept done!");
 		
 		
 		
