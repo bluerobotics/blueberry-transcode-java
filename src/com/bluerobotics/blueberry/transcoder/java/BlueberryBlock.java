@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
-Copyright (c) 2025 Blue Robotics North Inc.
-=======
 Copyright (c) 2024  Blue Robotics North Inc.
->>>>>>> branch 'main' of git@github.com:bluerobotics/blueberry-transcode-java.git
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
