@@ -203,7 +203,17 @@ public abstract class BlueberryMessage {
 		int j = m_buf.readUint16(i + SEQUENCE_PLACEHOLDER_BLOCK_INDEX);
 		return m_buf.readInt32(j + SEQUENCE_BLOCK_LENGTH_INDEX);
 	}
+	/**
+	 * initializes a sequence at the specified index
+	 * @param i the index to place the sequence placeholder
+	 * @param elementByteLength the number of bytes per sequence element
+	 * @param elementNum the number of elements
+	 * @return the index of the start of the sequence block
+	 */
 	protected int initSequenceBlock(int i, int elementByteLength, int elementNum) {
+		if(BlueberryBuffer.INVALID_INDEX == i) {
+			return BlueberryBuffer.INVALID_INDEX;
+		}
 		//determine the sequence block index
 		int j = m_buf.getLength();
 		//first grow the buffer
@@ -222,7 +232,10 @@ public abstract class BlueberryMessage {
 	 * @param elementByteLength - the number of bytes per element of the array
 	 * @return
 	 */
-	protected int getArrayElementBlock(int i, int elementIndex, int elementByteLength) {
+	protected int getArrayElementBlock(int i, int elementIndex, int elementByteLength, int elementNum) {
+		if(elementIndex >= elementNum) {
+			return BlueberryBuffer.INVALID_INDEX;
+		}
 		return i + (elementByteLength * elementIndex);
 	}
 	
