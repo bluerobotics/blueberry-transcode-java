@@ -50,6 +50,10 @@ public abstract class BlueberryMessage {
 	protected static final int SEQUENCE_PLACEHOLDER_ELEMENT_BYTES_INDEX = 2;
 	protected static final int SEQUENCE_BLOCK_LENGTH_INDEX = 0;
 	protected static final int SEQUENCE_BLOCK_DATA_START_INDEX = 4;
+	
+	public static final String TOPIC_NID_STRING = "{nid}";
+	public static final String TOPIC_DEVICE_TYPE_STRING = "{device_type}";
+	
 
 	protected final BlueberryBuffer m_buf;
 	
