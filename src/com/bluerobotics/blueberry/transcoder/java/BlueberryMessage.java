@@ -205,7 +205,7 @@ public abstract class BlueberryMessage {
 	
 	protected int getSequenceLength(int i) {
 		int j = m_buf.readUint16(i + SEQUENCE_PLACEHOLDER_BLOCK_INDEX);
-		return m_buf.readInt32(j + SEQUENCE_BLOCK_LENGTH_INDEX);
+		return j == BlueberryBuffer.INVALID_INDEX ? 0 :  m_buf.readInt32(j + SEQUENCE_BLOCK_LENGTH_INDEX);
 	}
 	/**
 	 * initializes a sequence at the specified index
