@@ -22,28 +22,143 @@ THE SOFTWARE.
 package com.bluerobotics.blueberry.transcoder.java;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.time.Instant;
+import java.util.Iterator;
 
+import com.bluerobotics.blueberry.transcoder.java.BlueberryMessage.MessageLookup;
 import com.starfishmedical.comms.Crc1021;
 import com.starfishmedical.comms.Packet;
 
 /**
- * 
+ * A wrapper for a buffer that assumes the contents are structured according to the alternate, Blueberry simple transport layer
+ * This means the buffer contains an 8-byte header, followed by message data
+ * the header consists of:
+ *  - 4 constant bytes: 'B', 'l', 'u', 'e'
+ *  - a uint16 of the packet length, measured in 4-byte words
+ *  - a uint16 containing the CRC-16-CCITT computed on the message data 
+ * Messages are encoded, end-to-end, each message with a 4-byte header consisting of:
+ *  - a uint16 of the module key-value
+ *  - a uint16 of the message key-value
+ *  - the message header can be treated as a unique 4-byte, uint32
+ * Each message also encodes its length, which can be determined by creating a message from it and interrogating it.
  */
-public class BlueberryPacket extends Packet {
-	protected BlueberryPacket(int bufferSize) {
-		super(bufferSize);
-	}
+public class BlueberryPacket {
+	private BlueberryBuffer m_buf;
+	private Instant m_receiveTime;
+	private static final int START_WORD_INDEX = 0;
+	private static final int LENGTH_INDEX = 4;
+	private static final int CRC_INDEX = 6;
+	private static final int DATA_INDEX = 8;
+//	private static final byte[] START_WORD_BYTES = {0x42, 0x6c, 0x75, 0x65};
+	private static final int START_WORD_VAL = 0x65756c42; //little endian means the lowest index byte (first received byte) is the least significant byte
+	
 
-	@Override
-	public int computeCrc(int startWord) {
+	
+	protected BlueberryPacket(ByteBuffer bb) {
+		m_buf = new BlueberryBuffer(bb.order(ByteOrder.LITTLE_ENDIAN));
+		m_receiveTime = Instant.now();
+
+		
+	}
+	/**
+	 * creates a new packet, ready for building into prior to transmission
+	 * @param bufferSize
+	 */
+	public static BlueberryPacket makeForTransmit(int bufferSize) {
+		BlueberryPacket result = new BlueberryPacket(ByteBuffer.wrap(new byte[bufferSize]));
+		return result;
+	}
+	/**
+	 * creates a new packet, ready for building into prior to transmission
+	 * @param bufferSize
+	 */
+	public static BlueberryPacket makeForReceive(int bufferSize) {
+		BlueberryPacket result = new BlueberryPacket(ByteBuffer.wrap(new byte[bufferSize]));
+		return result;
+	}
+	/**
+	 * creates a new packet for parsing, wrapping around an existing byte buffer
+	 * @param bb - the buffer with the received data in
+	 */
+	public static BlueberryPacket makeForReceive(ByteBuffer bb) {
+		return new BlueberryPacket(bb);
+	}
+	
+	private int getPublishedWordLength() {
+		return m_buf.readUint16(LENGTH_INDEX);
+	}
+	private void setPublishedWordLength(int len) {
+		m_buf.writeUint16(LENGTH_INDEX, len);
+	}
+	private int getPublishedCrc() {
+		return m_buf.readUint16(CRC_INDEX);
+	}
+	private void setPublishedCrc(int crc) {
+		m_buf.writeUint16(CRC_INDEX, crc);
+	}
+	/**
+	 * computes the CRC of this packet and compares it to its published CRC
+	 * @return - true if computed CRC matches published one
+	 */
+	protected boolean checkCrc() {
+		int acrc = computeCrc();
+		int pcrc = getPublishedCrc();
+		return acrc == pcrc;
+	}
+	/**
+	 * compares the actual length of this packet with its published length
+	 * @return
+	 */
+	protected boolean checkLength() {
+		int n = m_buf.getLength();
+		return n >= DATA_INDEX && n >= (getPublishedWordLength()*4);
+	}
+	
+	/**
+	 * checks the recevied bytes against the start word
+	 * this only checks up to the number received so far, so will pass if only one byte receieved and it matches the first expected start byte
+	 * @return
+	 */
+	protected boolean checkStartWord() {
+		int i = m_buf.getLength();
+		//i represents the number of bytes received so far
+		int sw = m_buf.readInt32(START_WORD_INDEX);
+		sw ^= START_WORD_VAL;
+		//mask off bits we have not received yet. Note that this could be written shorter but a switch-case seemed more understandable
+		switch(i){
+		case 0://we've received no bytes yet so don't check any
+			sw &= 0x0;
+			break;
+		case 1://we've only received one byte so only check the lowest order (first received) byte
+			sw &= 0xff;
+			break;
+		case 2:
+			sw &= 0xffff;
+			break;
+		case 3:
+			sw &= 0xffffff;
+			break;
+		default://we've received 4 or more bytes so we'll check all four start bytes
+			break;
+		}
+		//now if there are any non-zero bits in sw then we've failed the match
+		return sw == 0;
+		
+		
+	}
+	protected void setupHeader() {
+		m_buf.grow(DATA_INDEX, 0);
+		m_buf.writeInt32(START_WORD_INDEX, START_WORD_VAL);
+	}
+	public int computeCrc() {
 		int result = -1;
 		
 		int pl = getWordLength()*4;
 		Crc1021 crc = new Crc1021();
 
-		for(int i = startWord*4; i < pl; ++i){
-			byte b = get(i);
-//			crc.addByte1021(b);
+		for(int i = DATA_INDEX; i < pl; ++i){
+			byte b = (byte)m_buf.readUint8(i);
 			crc.addByte(b);
 		}
 			
@@ -51,8 +166,51 @@ public class BlueberryPacket extends Packet {
 		
 		return result;
 	}
-	public BlueberryBlock getTopLevelBlock() {
-		return new BlueberryBlock(getActualBuffer());
+//	/**
+//	 * puts the specified byte into the buffer
+//	 * @param b - the byte to add
+//	 * @return - the number of bytes in the buffer
+//	 */
+//	public int put(byte b) {
+//		return m_buf.put(b);
+//	}
+	public boolean isComplete() {
+		return m_buf.isComplete();
+	}
+	/**
+	 * if this packet is not complete then this method: appends zero-value bytes if necessary, updates the length field, computes the CRC, completes the buffer. 
+	 * zero-value bytes are appended if the length is not a multiple of 4-bytes
+	 * This must be called before transmitting a packet
+	 * @param crc - true computes crc, false not
+	 */
+	public void complete(boolean crc) {
+		if(!isComplete()) {
+			//append zero-value bytes as necessary
+			int n = getByteLength();
+			int m = n % 4;
+			m_buf.grow(m, 4);
+			for(int i = 0; i < m; ++i) {
+				m_buf.writeUint8(n + i, 0);
+			}
+			
+			//update the length field
+			setPublishedWordLength(n / 4);
+			
+			//compute (if desired) and set crc
+			setPublishedCrc(crc ? computeCrc() : 0xffff);
+			
+			//complete the buffer
+			m_buf.complete();
+		}
+	}
+	public int getByteLength() {
+		int result = -1;
+		if(isComplete()) {
+			result = getPublishedWordLength() * 4;
+		} else {
+			result = m_buf.getLength();
+		}
+		return result;
 	}
 	public int getWordLength() {
 		int result = getByteLength();
@@ -60,26 +218,91 @@ public class BlueberryPacket extends Packet {
 			result |= 0b11;
 			++result;
 		}
-		result >>= 2;//same as divide by 4
+		result /= 4;
 		return result;
 	}
+
 	public String toString() {
-		String s = getClass().getName();
-		s += "(";
-		ByteBuffer bb = getActualBuffer();
+		StringBuilder s = new StringBuilder();
+		s.append(getClass().getName());
+		s.append("(");
+		
 		boolean firstTime = true;
 		int pl = getWordLength()*4;
 		for(int i = 0; i < pl; ++i) {
-			byte b = bb.get(i);
+			byte b = (byte)m_buf.readUint8(i);
 			if(!firstTime) {
-				s += ",";
+				s.append(",");
 			}
 			firstTime = false;
-			s += " 0x"+Integer.toHexString(((int)b) & 0xff);
+			s.append("0x");
+			s.append(Integer.toHexString(((int)b) & 0xff));
 		}
-		s += " )";
-		return s;
+		s.append(" )");
+		return s.toString();
 	}
+	
+	public Iterator<BlueberryMessage> getMessages(MessageLookup lookup){
+		MessageIterator result = new MessageIterator(lookup);
+		
+		return result;
+	}
+	
+	private class MessageIterator implements Iterator<BlueberryMessage> {
+		private int i = 0;
+		private BlueberryPacket p;
+		private BlueberryMessage msg = null;
+		private final MessageLookup lu;
+		MessageIterator(MessageLookup mlu){
+			lu = mlu;
+		}
 
+		@Override
+		public boolean hasNext() {
+			int j = 0;
+			if(msg == null) {
+				j = DATA_INDEX;
+			} else {
+				j = i + 4 + msg.getByteLength();//the 4 is to jump past the module/message key
+			}
+			return j < p.getPublishedWordLength()*4;
+		}
+		
+		
+		
+		@Override
+		public BlueberryMessage next() {
+			if(msg == null) {
+				i = DATA_INDEX;
+			} else {
+				i += 4 + msg.getByteLength();//the 4 is to jump past the module/message key
+			}
+			int key = m_buf.readInt32(i);
+			
+			msg = lu.wrap(key, p.m_buf.getNextBuffer(i + 4));//the 4 here is also to look past the module/message key
+			return msg;
+		}
+		
+		
+	}
+	/**
+	 * gets a buffer aligned to the start of the data segment of the packet
+	 * @return
+	 */
+	public BlueberryBuffer getDataBuffer() {
+		return m_buf.getNextBuffer(DATA_INDEX);
+	}
+	public BlueberryBuffer getNextMessageBuffer() {
+		
+		return m_buf.getNextBuffer();
+	}
+	public int putNewByte(byte b) {
+		return m_buf.putNewByte(b);
+	}
+	public byte[] toArray() {
+		
+		return m_buf.toArray();
+	}
+	
 
 }

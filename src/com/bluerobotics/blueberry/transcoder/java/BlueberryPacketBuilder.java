@@ -22,15 +22,19 @@ THE SOFTWARE.
 */
 package com.bluerobotics.blueberry.transcoder.java;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * An abstract class to base a builder class on.
  * The builder is used to construct a packet for transmission
  */
-public abstract class BlueberryPacketBuilder {
+public class BlueberryPacketBuilder {
+	public interface BlueberryBuilder {
+		void buildMessage(BlueberryBuffer bb);
+	}
 	private BlueberryPacket m_packet;
 	private final int m_maxByteCount;
-	private BlueberryBlock m_topLevelBlock;
-	private BlueberryBlock m_currentBlock = null;
+	private ConcurrentHashMap<Integer, BlueberryBuilder> m_builders = new ConcurrentHashMap<>(); 
 	public BlueberryPacketBuilder(int maxByteCount) {
 		m_maxByteCount = maxByteCount;
 		reset();
@@ -41,37 +45,15 @@ public abstract class BlueberryPacketBuilder {
 	 * If not, then the current block will never be non-null and exceptions will occur
 	 */
 	public void reset() {
-		m_currentBlock = null;
-		m_packet = new BlueberryPacket(m_maxByteCount);
+		m_packet = BlueberryPacket.makeForTransmit(m_maxByteCount);
 		
-		m_topLevelBlock = m_packet.getTopLevelBlock();
+		
+	
 		
 	}
-	public BlueberryBlock getTopLevelBlock() {
-		return m_topLevelBlock;
-	}
-	public BlueberryBlock getCurrentBlock() {
-		return m_currentBlock;
-	}
-	/**
+	
 
-	 * creates a new block backed by the same bytes but with an starting point shifted by the specified amount
-	 * @param wordOffset
-	 */
-	protected void advanceBlock(int wordOffset) {
-		if(m_currentBlock == null) {
-			m_currentBlock = m_topLevelBlock;
-		}
-		m_currentBlock = m_currentBlock.getNextBlock(wordOffset);
-		m_topLevelBlock.setPosition(m_currentBlock);
-	}
-	/**
-	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
-	 * This method will be implemented by subclasses
-	 * It does not need to be called, it is called as part of the getPacket() method
-	 * @param omputeCrc - indicates whether the CRC should be computed for the paket header.
-	 */
-	protected abstract void finish(boolean computeCrc);
+
 	
 	/**
 	 * get the packet that was just constructed
@@ -80,4 +62,46 @@ public abstract class BlueberryPacketBuilder {
 	public BlueberryPacket getPacket() {
 		return m_packet;
 	}
+	/**
+	 * adds a new builder for the specified message key
+	 * @param key
+	 * @param b
+	 */
+	public void addMessageBuilder(int key, BlueberryBuilder b) {
+		m_builders.put(key, b);
+	}
+	/**
+	 * triggers the bulid of the message identified by the specified key
+	 * There must be a builder registered against the specified key for this to have any effect
+	 * @param key
+	 */
+	public BlueberryPacket build(boolean crc, int... keys) {
+		start();
+		addTo(keys);
+		return finish(crc);
+	}
+	public void start() {
+		reset();
+		m_packet.setupHeader();
+	}
+	public void addTo(int... keys) {
+		for(int k : keys) {
+			BlueberryBuilder b = m_builders.get(k);
+			if(b != null) {
+				b.buildMessage(m_packet.getNextMessageBuffer());
+			}
+		}
+	}
+	/**
+	 * finishes any last items in the packet, like finalizing the length, computing crc, etc.
+	 * This method will be implemented by subclasses
+	 * It does not need to be called, it is called as part of the getPacket() method
+	 * @param omputeCrc - indicates whether the CRC should be computed for the paket header.
+	 */
+	public BlueberryPacket finish(boolean crc) {
+		m_packet.complete(crc);
+		return m_packet;
+	}
+	
+	
 }
