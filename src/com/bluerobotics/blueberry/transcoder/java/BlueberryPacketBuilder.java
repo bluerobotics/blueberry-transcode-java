@@ -73,10 +73,11 @@ public class BlueberryPacketBuilder {
 	/**
 	 * triggers the bulid of the message identified by the specified key
 	 * There must be a builder registered against the specified key for this to have any effect
-	 * @param key
+	 * @param keys - the messages to add to the packet
 	 */
 	public BlueberryPacket build(boolean crc, int... keys) {
 		start();
+		
 		addTo(keys);
 		return finish(crc);
 	}
