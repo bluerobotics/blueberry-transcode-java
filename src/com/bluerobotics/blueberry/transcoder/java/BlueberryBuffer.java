@@ -129,7 +129,28 @@ public class BlueberryBuffer {
 		checkIndex(i, 8);
 		return m_buf.getLong(i + m_byteOffset);
 	}
+	/**
+	 * reads an unsigned long from the buffer.
+	 * Note that these are treated like normal longs. This means it will be signed and it's up to the user to treat it as unsigned.
+	 * @param i
+	 * @return
+	 */
+	public long readUint64(int i) {
+		checkIndex(i, 8);
+		return m_buf.getLong(i + m_byteOffset);
+	}
 	public void writeInt64(int i, long v) {
+		checkIndex(i, 8);
+		m_buf.putLong(i + m_byteOffset, v);
+	}
+	/**
+	 * Writes a long to a spot in the buffer allocated for an unsigned long.
+	 * Note that this uses normal longs. This means it will be signed and it's up to the user to treat it as unsigned.
+
+	 * @param i
+	 * @param v
+	 */
+	public void writeUint64(int i, long v) {
 		checkIndex(i, 8);
 		m_buf.putLong(i + m_byteOffset, v);
 	}
