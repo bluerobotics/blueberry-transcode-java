@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 package com.bluerobotics.blueberry.transcoder.java;
 
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -35,6 +36,7 @@ public class BlueberryPacketBuilder {
 	private BlueberryPacket m_packet;
 	private final int m_maxByteCount;
 	private ConcurrentHashMap<Integer, BlueberryBuilder> m_builders = new ConcurrentHashMap<>(); 
+	private ConcurrentHashMap<Integer, String> m_builderNames = new ConcurrentHashMap<>();
 	public BlueberryPacketBuilder(int maxByteCount) {
 		m_maxByteCount = maxByteCount;
 		reset();
@@ -70,6 +72,11 @@ public class BlueberryPacketBuilder {
 	public void addMessageBuilder(int key, BlueberryBuilder b) {
 		m_builders.put(key, b);
 	}
+	
+	public void addMessageBuilder(int key, String name, BlueberryBuilder b) {
+		addMessageBuilder(key, b);
+		m_builderNames.put(key, name);
+	}
 	/**
 	 * triggers the bulid of the message identified by the specified key
 	 * There must be a builder registered against the specified key for this to have any effect
@@ -104,5 +111,19 @@ public class BlueberryPacketBuilder {
 		return m_packet;
 	}
 	
-	
+	public Iterator<Integer> getKeys(){
+		return m_builders.keys().asIterator();
+	}
+	public String getBuilderName(int key) {
+		String  result = m_builderNames.get(key);
+		if(result == null) {
+			result = Integer.toHexString(key);
+			int n = 8 - result.length();
+			if(n < 0) {
+				n = 0;
+			}
+			result = "0".repeat(n);
+		}
+		return "0x"+result;
+	}
 }
