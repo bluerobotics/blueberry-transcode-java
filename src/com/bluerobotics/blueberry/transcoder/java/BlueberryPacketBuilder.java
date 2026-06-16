@@ -111,8 +111,19 @@ public class BlueberryPacketBuilder {
 		return m_packet;
 	}
 	
-	public Iterator<Integer> getKeys(){
-		return m_builders.keys().asIterator();
+	public int[] getKeys(){
+		int n = m_builders.size();
+		int[] result = new int[n];
+		int i = 0;
+		Iterator<Integer> is = m_builders.keys().asIterator();
+		while(is.hasNext()) {
+			result[i] = is.next();
+			++i;
+		}
+		return result;
+	}
+	public int getKeyCount() {
+		return m_builders.size();
 	}
 	public String getBuilderName(int key) {
 		String  result = m_builderNames.get(key);
@@ -123,7 +134,8 @@ public class BlueberryPacketBuilder {
 				n = 0;
 			}
 			result = "0".repeat(n);
+			result = "0x"+result;
 		}
-		return "0x"+result;
+		return result;
 	}
 }
