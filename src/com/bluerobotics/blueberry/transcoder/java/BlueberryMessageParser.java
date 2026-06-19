@@ -5,7 +5,6 @@ package com.bluerobotics.blueberry.transcoder.java;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * A class to keep track of messages, message parsers and module/message keys
@@ -32,6 +31,7 @@ public class BlueberryMessageParser implements Consumer<BlueberryPacket>{
 		while(!buf.isEmpty()) {
 			int key = BlueberryMessage.getModuleMessageKey(buf);
 			int len = BlueberryMessage.getByteLength(buf);
+			
 			parse(key, buf);
 			buf = buf.getNextBuffer(len);
 		}

@@ -28,7 +28,6 @@ import java.util.Iterator;
 
 import com.bluerobotics.blueberry.transcoder.java.BlueberryMessage.MessageLookup;
 import com.starfishmedical.comms.Crc1021;
-import com.starfishmedical.comms.Packet;
 
 /**
  * A wrapper for a buffer that assumes the contents are structured according to the alternate, Blueberry simple transport layer
