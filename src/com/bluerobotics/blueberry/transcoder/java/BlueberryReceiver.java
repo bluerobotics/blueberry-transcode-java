@@ -6,7 +6,6 @@ package com.bluerobotics.blueberry.transcoder.java;
 import java.nio.BufferOverflowException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -92,6 +91,8 @@ public class BlueberryReceiver {
 		} else if(m_packet.checkLength()){
 			//check to see if we're done
 			
+			
+			
 			if(!m_checkCrc || m_packet.checkCrc()){
 				publish(m_packet);
 				result = true;
@@ -103,7 +104,9 @@ public class BlueberryReceiver {
 	}
 	
 	public void reset() {
+
 		m_packet = BlueberryPacket.makeForReceive(BUFF_MAX_SIZE);
+		
 	}
 	
 	/**
